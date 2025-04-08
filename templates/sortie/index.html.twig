@@ -4,20 +4,20 @@
 
 {% block body %}
     <h1>Sortie index</h1>
-
+    <a class="btn btn-primary m-3" href="{{ path('app_sortie_new') }}">Create new</a>
     <table class="table">
         <thead>
             <tr>
 
-                <th>Nom</th>
-                <th>StartAt</th>
+                <th>Nom de l'évènement </th>
+                <th>Début de l'évènement</th>
 
 
-                <th>LimitMembers</th>
+                <th>Limite d'inscriptions</th>
                 <th>Etat</th>
 
 
-                <th>actions</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -32,8 +32,12 @@
                 <td>{{ sortie.status.name }}</td>
 
                 <td>
-                    <a href="{{ path('app_sortie_show', {'id': sortie.id}) }}">show</a>
-                    <a href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">edit</a>
+                    <a class="btn btn-primary" href="{{ path('app_sortie_show', {'id': sortie.id}) }}">show</a>
+                    {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user  %}
+                        <a class="btn btn-primary" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">edit</a>
+
+                    {% endif %}
+
                 </td>
             </tr>
         {% else %}
@@ -44,5 +48,5 @@
         </tbody>
     </table>
 
-    <a href="{{ path('app_sortie_new') }}">Create new</a>
+
 {% endblock %}

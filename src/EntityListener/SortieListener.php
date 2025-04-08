@@ -5,7 +5,8 @@ namespace App\EntityListener;
 use App\Entity\Etat;
 use App\Entity\Sortie;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Event\PostLoadEventArgs;
+
+
 
 class SortieListener
 {
@@ -15,6 +16,12 @@ class SortieListener
     {
         $this->em = $em;
     }
+    /**
+     * Méthode permettant de gérer le statut d'une sortie à chaque fois qu'elle est chargée
+     * Class SortieListener
+     * @package App\EntityListener
+     * @ORM\EntityListeners({"App\EventListener\SortieListener"})
+     */
     public function postLoad(Sortie $sortie): void
     {
 
@@ -24,19 +31,19 @@ class SortieListener
         $finished = $sortie->getStartAt()->add(new \DateInterval('PT' . $sortie->getDuration() . 'M'));
         $inscriptionStart = $sortie->getRegisterStartAt();
 
-
+//dd($finished, $now, $sortieDate, $limitInscriptionDate, $inscriptionStart);
 
         if ($sortieDate < $now && $finished >= $now) {
-            $etat = $this->em->getRepository(Etat::class)->findOneBy(['id' => '1']);
+            $etat = $this->em->getRepository(Etat::class)->find(1);// En cours
             $sortie->setStatus($etat);
         } elseif ($finished < $now) {
-            $etat = $this->em->getRepository(Etat::class)->findOneBy(['id' => '2']);
+            $etat = $this->em->getRepository(Etat::class)->find(5);// Terminée
             $sortie->setStatus($etat);
         }elseif ($limitInscriptionDate < $now && $sortieDate > $now) {
-            $etat = $this->em->getRepository(Etat::class)->findOneBy(['id' => '5']);
+            $etat = $this->em->getRepository(Etat::class)->find(4);// Cloturée)
             $sortie->setStatus($etat);
         } elseif ($limitInscriptionDate > $now && $inscriptionStart < $now) {
-            $etat = $this->em->getRepository(Etat::class)->findOneBy(['id' => '4']);
+            $etat = $this->em->getRepository(Etat::class)->find(3);// Ouverte
             $sortie->setStatus($etat);
 
         }}

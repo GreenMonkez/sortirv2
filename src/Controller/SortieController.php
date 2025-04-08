@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Sortie;
-use App\EventListener\SortieStatusListener;
 use App\Form\SortieType;
 use App\Repository\EtatRepository;
 use App\Repository\SiteRepository;
@@ -14,8 +13,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/sortie')]
+#[IsGranted('ROLE_USER')]
 final class SortieController extends AbstractController
 {
 
@@ -25,6 +26,11 @@ final class SortieController extends AbstractController
     {
     }
 
+    /**
+     * Méthode permettant d'afficher toutes les sorties avec des filtres
+     * @param SortieRepository $sortieRepository
+     * @return Response
+     */
     #[Route(name: 'app_sortie_index', methods: ['GET'])]
     public function index(SortieRepository $sortieRepository): Response
     {
@@ -35,6 +41,13 @@ final class SortieController extends AbstractController
         ]);
     }
 
+    /**
+     * Méthode permettant de créer une sortie
+     * @param Request $request
+     * @param SiteRepository $repository
+     * @param UserRepository $userRepository
+     * @return Response
+     */
     #[Route('/new', name: 'app_sortie_new', methods: ['GET', 'POST'])]
     public function new(Request $request, SiteRepository $repository, UserRepository $userRepository): Response
     {
@@ -46,9 +59,8 @@ final class SortieController extends AbstractController
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $sortie->setDuration($sortie->getDuration() * 60);
-                $sortie->setStatus($this->etatRepository->find(3));
-                $sortie->setSite($repository->find(1));
-                $sortie->setPlanner($userRepository->find(1));
+                $sortie->setStatus($this->etatRepository->find(2));
+                $sortie->setPlanner($this->getUser());
             $this->entityManager->persist($sortie);
 
             $this->entityManager->flush();
@@ -61,7 +73,11 @@ final class SortieController extends AbstractController
             'form' => $form,
         ]);
     }
-
+    /**
+     * Méthode permettant d'afficher une sortie par son id
+     * @param Sortie $sortie
+     * @return Response
+     */
     #[Route('/{id}', name: 'app_sortie_show', methods: ['GET'])]
     public function show(Sortie $sortie): Response
     {
@@ -75,6 +91,13 @@ final class SortieController extends AbstractController
         ]);
     }
 
+    /**
+     * Méthode permettant de modifier une sortie
+     * @param Request $request
+     * @param Sortie $sortie
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
     #[Route('/{id}/edit', name: 'app_sortie_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
     {
@@ -94,6 +117,13 @@ final class SortieController extends AbstractController
         ]);
     }
 
+    /**
+     * Méthode permettant d'annuler une sortie
+     * @param Request $request
+     * @param Sortie $sortie
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
     #[Route('/{id}', name: 'app_sortie_delete', methods: ['POST'])]
     public function delete(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
     {
