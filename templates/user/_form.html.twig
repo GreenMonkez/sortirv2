@@ -1,0 +1,10 @@
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+    {# Add user.site.name as text if user is not admin #}
+    {% if not is_granted('ROLE_ADMIN') %}
+        <p >Ville de rattachement : {{ user.site.name }}</p>
+    {% endif %}
+    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+{{ form_end(form) }}

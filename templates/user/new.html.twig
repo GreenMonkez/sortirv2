@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parent() }} - Création{% endblock %}
+
+{% block body %}
+    <h1>Création utilisateur</h1>
+
+    {{ include('user/_form.html.twig') }}
+
+    <a href="{{ path('app_user_index') }}">Annuler</a>
+
+{% endblock %}
