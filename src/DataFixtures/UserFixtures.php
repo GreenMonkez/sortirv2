@@ -48,6 +48,7 @@ class UserFixtures extends Fixture
             $user->setPhoneNumber($this->faker->phoneNumber);
             $user->setIsActive($this->faker->boolean(80));
             $user->setSite($this->getReference('site-'.mt_rand(1,4), Site::class));
+            $this->addReference('user-'.$i, $user);
             $manager->persist($user);
         }
 
