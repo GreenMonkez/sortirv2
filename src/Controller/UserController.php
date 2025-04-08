@@ -175,10 +175,34 @@ final class UserController extends AbstractController
 
     #[IsGranted('ROLE_ADMIN')]
     #[Route('/{id}', name: 'app_user_delete', methods: ['POST'])]
-    public function delete(Request $request, User $user, EntityManagerInterface $entityManager): Response
+    public function delete(
+        Request $request,
+        User $user,
+        EntityManagerInterface $entityManager
+    ): Response
     {
         if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->getPayload()->getString('_token'))) {
-            $entityManager->remove($user);
+            // Get the old photo filename
+            $oldPhoto = $user->getPhoto();
+
+            $user->setEmail('anonyme_' . uniqid() . '@example.com');
+            $user->setPseudo('Utilisateur_' . uniqid());
+            $user->setFirstName('Anonyme');
+            $user->setLastName('Anonyme');
+            $user->setPhoneNumber(null);
+            $user->setIsActive(false);
+            $user->setRoles(['ROLE_ANONYMOUS']);
+            $user->setPassword('');
+            $user->setPhoto(null);
+
+            // Delete the old photo if it exists
+            if ($oldPhoto) {
+                $oldPhotoPath = $this->getParameter('photo_directory').'/'.$oldPhoto;
+                if (file_exists($oldPhotoPath)) {
+                    unlink($oldPhotoPath);
+                }
+            }
+
             $entityManager->flush();
         }
 
