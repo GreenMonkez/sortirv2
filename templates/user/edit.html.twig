@@ -3,9 +3,18 @@
 {% block title %}{{ parent() }} - Modification{% endblock %}
 
 {% block body %}
-    <h1>Mon profil</h1>
 
-    {{ include('user/_form.html.twig', {'button_label': 'Enregistrer'}) }}
+    <h1>Mon profil</h1>
+    <div class=" d-flex align-items-start">
+        {% if user.photo %}
+            <img src="{{ asset('uploads/photo/' ~ user.photo) }}" alt="Photo de profil" class=" img-thumbnail me-3" style="width: 150px; height: 150px;">
+        {% else %}
+            <img src="{{ asset('images/profil_vide.jpg') }}" alt="Photo de profil" class=" img-thumbnail me-3" style="width: 150px; height: 150px;">
+        {% endif %}
+        <div class=" flex-grow-1">
+            {{ include('user/_form.html.twig', {'button_label': 'Enregistrer'}) }}
+        </div>
+    </div>
 
     <a href="{{ path('app_user_index') }}">Annuler</a>
 

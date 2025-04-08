@@ -3,32 +3,41 @@
 {% block title %}{{ parent() }} - Liste{% endblock %}
 
 {% block body %}
-    <h1>{{ user.pseudo}}</h1>
 
-    <table class="table">
-        <tbody>
-            <tr>
-                <th>Prénom :</th>
-                <td>{{ user.firstName }}</td>
-            </tr>
-            <tr>
-                <th>Nom :</th>
-                <td>{{ user.lastName }}</td>
-            </tr>
-            <tr>
-                <th>Téléphone :</th>
-                <td>{{ user.phoneNumber }}</td>
-            </tr>
-            <tr>
-                <th>Email :</th>
-                <td>{{ user.email }}</td>
-            </tr>
-            <tr>
-                <th>Ville de rattachement :</th>
-                <td>{{ user.site.name }}</td>
-            </tr>
-        </tbody>
-    </table>
+    <h1>{{ user.pseudo}}</h1>
+    <div class=" d-flex align-items-start">
+        {% if user.photo %}
+            <img src="{{ asset('uploads/photo/' ~ user.photo) }}" alt="Photo de profil" class=" img-thumbnail me-3" style="width: 150px; height: 150px;">
+        {% else %}
+            <img src="{{ asset('images/profil_vide.jpg') }}" alt="Photo de profil" class=" img-thumbnail me-3" style="width: 150px; height: 150px;">
+        {% endif %}
+        <div class=" flex-grow-1">
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th>Prénom :</th>
+                        <td>{{ user.firstName }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nom :</th>
+                        <td>{{ user.lastName }}</td>
+                    </tr>
+                    <tr>
+                        <th>Téléphone :</th>
+                        <td>{{ user.phoneNumber }}</td>
+                    </tr>
+                    <tr>
+                        <th>Email :</th>
+                        <td>{{ user.email }}</td>
+                    </tr>
+                    <tr>
+                        <th>Ville de rattachement :</th>
+                        <td>{{ user.site.name }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 {#    <a href="{{ path('app_user_index') }}">back to list</a>#}
 

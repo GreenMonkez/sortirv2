@@ -7,6 +7,7 @@ use App\Form\UserType;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -38,6 +39,29 @@ final class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Upload the profile picture
+            $photoFile = $form->get('photo')->getData();
+
+            if ($photoFile) {
+                // Generate a unique filename for the new photo
+                $newFilename = uniqid().'.'.$photoFile->guessExtension();
+
+                try {
+                    // Move the file to the directory where profile pictures are stored
+                    $photoFile->move(
+                        $this->getParameter('photo_directory'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    // Handle exception if something happens during file upload
+                    $this->addFlash('error', 'Erreur lors de l\'upload de la photo.');
+                    return $this->redirectToRoute('app_user_new');
+                }
+
+                // Update the 'photo' property to store the file name
+                $user->setPhoto($newFilename);
+            }
+
             // Hash the password
             $user->setPassword(
                 $passwordHasher->hashPassword(
@@ -88,6 +112,41 @@ final class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Upload the profile picture
+            $photoFile = $form->get('photo')->getData();
+
+            if ($photoFile) {
+                // Get the old photo filename
+                $oldPhoto = $user->getPhoto();
+
+                // Generate a unique filename for the new photo
+                $newFilename = uniqid().'.'.$photoFile->guessExtension();
+
+                try {
+                    // Move the file to the directory where profile pictures are stored
+                    $photoFile->move(
+                        $this->getParameter('photo_directory'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    // Handle exception if something happens during file upload
+                    $this->addFlash('error', 'Erreur lors de l\'upload de la photo.');
+                    return $this->redirectToRoute('app_user_new');
+                }
+
+                // Delete the old photo if it exists
+                if ($oldPhoto) {
+                    $oldPhotoPath = $this->getParameter('photo_directory').'/'.$oldPhoto;
+                    if (file_exists($oldPhotoPath)) {
+                        unlink($oldPhotoPath);
+                    }
+                }
+
+                // Update the 'photo' property to store the file name
+                $user->setPhoto($newFilename);
+            }
+
+            // Check if the password field is empty
             $newPassword = $form->get('password')->getData();
 
             if ($newPassword) {
