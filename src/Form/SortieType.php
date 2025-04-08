@@ -2,15 +2,11 @@
 
 namespace App\Form;
 
-use App\Entity\Etat;
-use App\Entity\Lieu;
-use App\Entity\Site;
 use App\Entity\Sortie;
-use App\Entity\User;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Repository\SiteRepository;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -19,6 +15,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class SortieType extends AbstractType
 {
+    public function __construct(private SiteRepository $siteRepository)
+    {
+    }
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -50,6 +49,18 @@ class SortieType extends AbstractType
                 'label' => 'Description',
             ])
             ->add('lieu', LieuType::class, [
+
+            ])
+            ->add('site', ChoiceType::class, [
+                'label' => 'Site',
+                'placeholder' => 'Choisissez un site',
+                'choices' => [
+                    'Nantes' => $this->siteRepository->findOneBy(['name' => 'Nantes']),
+                    'Rennes' => $this->siteRepository->findOneBy(['name' => 'Rennes']),
+                    'Niort' => $this->siteRepository->findOneBy(['name' => 'Niort']),
+                    'Quimper' => $this->siteRepository->findOneBy(['name' => 'Quimper']),
+                ],
+
 
             ])
 
