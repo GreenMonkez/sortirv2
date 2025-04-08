@@ -36,19 +36,6 @@ class UserFixtures extends Fixture
         $admin->setSite($this->getReference('site-'.mt_rand(1,4), Site::class));
         $manager->persist($admin);
 
-        // Create planner user
-        $planner = new User();
-        $planner->setPseudo($this->faker->userName);
-        $planner->setEmail($this->faker->email);
-        $planner->setRoles(['ROLE_PLANNER']);
-        $planner->setPassword($this->hashI->hashPassword($planner, 'password'));
-        $planner->setFirstName($this->faker->firstName);
-        $planner->setLastName($this->faker->lastName);
-        $planner->setPhoneNumber($this->faker->phoneNumber);
-        $planner->setIsActive(true);
-        $planner->setSite($this->getReference('site-'.mt_rand(1,4), Site::class));
-        $manager->persist($planner);
-
         // Create regular users
         for ($i = 0; $i < 10; $i++) {
             $user = new User();

@@ -11,10 +11,10 @@
             {% block importmap %}{{ importmap('app') }}{% endblock %}
         {% endblock %}
     </head>
-    <body>
+    <body class="d-flex flex-column min-vh-100">
     {% include "partials/_navbar.html.twig" %}
 
-    <div class="container">
+    <div class="container flex-grow-1">
 
         {% include "partials/_flashes.html.twig" %}
 
