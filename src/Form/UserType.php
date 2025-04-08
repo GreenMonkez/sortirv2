@@ -10,11 +10,13 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\EqualTo;
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 
@@ -53,6 +55,21 @@ class UserType extends AbstractType
                 'first_options'  => array('label' => 'Mot de passe :'),
                 'second_options' => array('label' => 'Confirmation :'),
             ))
+            ->add('photo', FileType::class, [
+                'label' => 'Ma photo :',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                        ],
+                        'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG ou PNG).',
+                    ]),
+                ],
+            ])
         ;
 
         // Add isActive field if the user is an admin
@@ -64,7 +81,7 @@ class UserType extends AbstractType
             ])
                 ->add('isActive', CheckboxType::class, [
                 'required' => false,
-                'label' => 'Actif',
+                'label' => 'Compte actif',
             ]);
         }
     }

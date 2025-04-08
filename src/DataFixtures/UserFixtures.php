@@ -36,7 +36,6 @@ class UserFixtures extends Fixture
         $admin->setSite($this->getReference('site-'.mt_rand(1,4), Site::class));
         $manager->persist($admin);
 
-
         // Create regular users
         for ($i = 0; $i < 10; $i++) {
             $user = new User();

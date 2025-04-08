@@ -3,8 +3,8 @@
 {{ form_start(form) }}
     {{ form_widget(form) }}
     {# Add user.site.name as text if user is not admin #}
-    {% if not is_granted('ROLE_ADMIN') %}
-        <p >Ville de rattachement : {{ user.site.name }}</p>
+    {% if not is_granted('ROLE_ADMIN') and user.site %}
+        <p class="text-muted">Ville de rattachement : {{ user.site.name }}</p>
     {% endif %}
-    <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
+    <button class="btn btn-primary">{{ button_label|default('Enregistrer') }}</button>
 {{ form_end(form) }}
