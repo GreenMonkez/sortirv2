@@ -6,11 +6,14 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -18,7 +21,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
+    #[Assert\NotBlank(message: 'Email is required')]
+    #[Assert\Email(message: 'The email {{ value }} is not a valid email.')]
+    #[Assert\Length(
+        min: 6,
+        max: 180,
+        minMessage: 'Your email should be at least {{ limit }} characters',
+        maxMessage: 'Your email cannot be longer than {{ limit }} characters',
+    )]
+    #[Assert\Regex(
+        pattern: '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
+        message: 'The email {{ value }} is not a valid email.',
+    )]
     private ?string $email = null;
 
     /**
@@ -31,12 +46,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var string The hashed password
      */
     #[ORM\Column]
+    #[Assert\Length(
+        min: 6,
+        max: 255,
+        minMessage: 'Your password should be at least {{ limit }} characters',
+        maxMessage: 'Your password cannot be longer than {{ limit }} characters',
+    )]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Last name is required')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Your last name should be at least {{ limit }} characters',
+        maxMessage: 'Your last name cannot be longer than {{ limit }} characters',
+    )]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'First name is required')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Your first name should be at least {{ limit }} characters',
+        maxMessage: 'Your first name cannot be longer than {{ limit }} characters',
+    )]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -60,6 +95,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Sortie::class, mappedBy: 'planner')]
     private Collection $sortiesPlannified;
+
+    #[ORM\Column(length: 255, unique: true)]
+    #[Assert\NotBlank(message: 'Pseudo is required')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Your pseudo should be at least {{ limit }} characters',
+        maxMessage: 'Your pseudo cannot be longer than {{ limit }} characters',
+    )]
+    private ?string $pseudo = null;
 
     public function __construct()
     {
@@ -126,7 +171,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(?string $password): static
     {
         $this->password = $password;
 
@@ -252,6 +297,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $sortiesPlannified->setPlanner(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPseudo(): ?string
+    {
+        return $this->pseudo;
+    }
+
+    public function setPseudo(string $pseudo): static
+    {
+        $this->pseudo = $pseudo;
 
         return $this;
     }
