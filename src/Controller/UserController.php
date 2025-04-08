@@ -131,7 +131,7 @@ final class UserController extends AbstractController
                 } catch (FileException $e) {
                     // Handle exception if something happens during file upload
                     $this->addFlash('error', 'Erreur lors de l\'upload de la photo.');
-                    return $this->redirectToRoute('app_user_new');
+                    return $this->redirectToRoute('app_user_edit', ['id' => $user->getId()]);
                 }
 
                 // Delete the old photo if it exists
@@ -162,9 +162,14 @@ final class UserController extends AbstractController
 
             $entityManager->flush();
 
-            $this->addFlash('success', 'Votre compte a bien été mis à jour !');
-
-            return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+            // If the user is not an admin, redirect to sortie index, else, redirect to user index
+            if (!$this->isGranted('ROLE_ADMIN')) {
+                $this->addFlash('success', 'Votre compte a bien été mis à jour !');
+                return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+            }else{
+                $this->addFlash('success', 'L\'utilisateur a bien été mis à jour !');
+                return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
+            }
         }
 
         return $this->render('user/edit.html.twig', [
