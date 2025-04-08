@@ -1,3 +1,8 @@
 body {
-    background-color: skyblue;
+    background-color: #ffe8e8;
+}
+label.required:after{
+    content: "*";
+    color: red;
+
 }

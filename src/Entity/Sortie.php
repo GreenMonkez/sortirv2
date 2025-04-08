@@ -2,13 +2,17 @@
 
 namespace App\Entity;
 
+use App\EntityListener\SortieListener;
 use App\Repository\SortieRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SortieRepository::class)]
+#[ORM\HasLifecycleCallbacks]
+#[ORM\EntityListeners([SortieListener::class])]
 class Sortie
 {
     #[ORM\Id]
@@ -17,25 +21,67 @@ class Sortie
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le nom de la sortie est obligatoire')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'Le nom de la sortie doit contenir au moins {{ limit }} caractères',
+        maxMessage: 'Le nom de la sortie ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $nom = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'La date de début est obligatoire')]
+    #[Assert\GreaterThanOrEqual(
+        value: 'today',
+        message: 'La date de début doit être supérieure ou égale à aujourd\'hui'
+    )]
+    #[Assert\GreaterThanOrEqual(
+        propertyPath: 'limitSortieAt',
+        message: 'La date de début doit être supérieure ou égale à la date limite d\'inscription'
+    )]
+    #[Assert\Type(type: \DateTimeImmutable::class, message: 'La date de début doit être au format valide')]
     private ?\DateTimeImmutable $startAt = null;
 
     #[ORM\Column(type: Types::SMALLINT)]
+    #[Assert\NotBlank(message: 'La durée est obligatoire')]
+    #[Assert\GreaterThan(
+        value: 0,
+        message: 'La durée doit être supérieure à 0'
+    )]
+    #[Assert\Type(type: 'integer', message: 'La durée doit être un entier')]
     private ?int $duration = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'La date limite d\'inscription est obligatoire')]
+    #[Assert\GreaterThanOrEqual(
+        value: 'today',
+        message: 'La date limite d\'inscription doit être supérieure ou égale à aujourd\'hui'
+    )]
+    #[Assert\LessThan(
+        propertyPath: 'startAt',
+        message: 'La date limite d\'inscription doit être inférieure à la date de début'
+    )]
+    #[Assert\Type(type: \DateTimeImmutable::class, message: 'La date limite d\'inscription doit être au format valide')]
     private ?\DateTimeImmutable $limitSortieAt = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'Le nombre de places est obligatoire')]
+    #[Assert\Positive(message: 'Le nombre de places doit être positif')]
+    #[Assert\Type(type: 'integer', message: 'Le nombre de places doit être un entier')]
     private ?int $limitMembers = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\Length(
+        max: 1000,
+        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères'
+    )]
+
     private ?string $description = null;
 
     #[ORM\ManyToOne(inversedBy: 'sorties')]
     #[ORM\JoinColumn(nullable: false)]
+
     private ?Etat $status = null;
 
     #[ORM\Column]
@@ -44,7 +90,7 @@ class Sortie
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $modifiedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'sorties')]
+    #[ORM\ManyToOne(inversedBy: 'sorties', cascade: ['persist'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?Lieu $lieu = null;
 
@@ -61,6 +107,24 @@ class Sortie
     #[ORM\ManyToOne(inversedBy: 'sortiesPlannified')]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $planner = null;
+
+    #[ORM\Column]
+    #[Assert\NotBlank(message: 'La date de début d\'inscription est obligatoire')]
+    #[Assert\GreaterThan(
+        value: 'today',
+        message: 'La date de début d\'inscription doit être supérieure à aujourd\'hui'
+    )]
+    #[Assert\LessThan(
+        propertyPath: 'limitSortieAt',
+        message: 'La date de début d\'inscription doit être inférieure à la date limite d\'inscription'
+    )]
+    #[Assert\Type(type: \DateTimeImmutable::class, message: 'La date de début d\'inscription doit être au format valide')]
+
+    private ?\DateTimeImmutable $registerStartAt = null;
+
+    #[ORM\Column]
+
+    private ?bool $isArchive = null;
 
     public function __construct()
     {
@@ -161,9 +225,10 @@ class Sortie
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeImmutable $createdAt): static
+    #[ORM\PrePersist]
+    public function setCreatedAt(): static
     {
-        $this->createdAt = $createdAt;
+        $this->createdAt = new \DateTimeImmutable();
 
         return $this;
     }
@@ -173,9 +238,10 @@ class Sortie
         return $this->modifiedAt;
     }
 
-    public function setModifiedAt(?\DateTimeImmutable $modifiedAt): static
+    #[ORM\PreUpdate]
+    public function setModifiedAt(): static
     {
-        $this->modifiedAt = $modifiedAt;
+        $this->modifiedAt = new \DateTimeImmutable();
 
         return $this;
     }
@@ -242,4 +308,31 @@ class Sortie
 
         return $this;
     }
+
+    public function getRegisterStartAt(): ?\DateTimeImmutable
+    {
+        return $this->registerStartAt;
+    }
+
+    public function setRegisterStartAt(\DateTimeImmutable $registerStartAt): static
+    {
+        $this->registerStartAt = $registerStartAt;
+
+        return $this;
+    }
+
+    public function isArchive(): ?bool
+    {
+        return $this->isArchive;
+    }
+
+    #[ORM\PrePersist]
+    public function setIsArchive(): static
+    {
+        $this->isArchive = false;
+
+        return $this;
+    }
+
+
 }
