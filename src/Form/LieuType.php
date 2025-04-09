@@ -3,8 +3,9 @@
 namespace App\Form;
 
 use App\Entity\Lieu;
-use App\Entity\Ville;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+
+use App\Form\EventListener\LieuFormListener;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -12,6 +13,9 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class LieuType extends AbstractType
 {
+    public function __construct(private EntityManagerInterface $entityManager)
+    {
+    }
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -37,6 +41,9 @@ class LieuType extends AbstractType
             ])
 
         ;
+
+        // Ajoutez le listener au formulaire
+        $builder->addEventSubscriber(new LieuFormListener($this->entityManager));
     }
 
     public function configureOptions(OptionsResolver $resolver): void

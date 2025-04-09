@@ -3,8 +3,35 @@
 {% block title %}Sortie index{% endblock %}
 
 {% block body %}
+
+    <p>{{ app.user.firstName }} {{ app.user.lastName }}</p>
     <h1>Sortie index</h1>
+    <section>
     <a class="btn btn-primary m-3" href="{{ path('app_sortie_new') }}">Create new</a>
+        <form method="get" action="{{ path('app_sortie_filter') }}">
+            <input type="text" name="search" placeholder="Rechercher une sortie" value="{{ app.request.query.get('search') }}">
+            <button type="submit" class="btn btn-primary">Rechercher</button>
+        </form>
+        <form method="get" action="{{ path('app_sortie_filter') }}">
+            <input type="date" name="start_date" value="{{ app.request.query.get('start_date') }}">
+            <input type="date" name="end_date" value="{{ app.request.query.get('end_date') }}">
+            <button type="submit" class="btn btn-primary">Filtrer par dates</button>
+        </form>
+        <select name="site" id="site" onchange="location = this.value;">
+            <option value="">-- Choisir un filtre --</option>
+            {% for site in sites %}
+                <option value="{{ path('app_sortie_filter', {'site' :  site.id }) }}">{{ site.name }}</option>
+
+            {% endfor %}
+        </select>
+        <ul>
+            <li><a href="{{ path('app_sortie_filter') }}">All</a></li>
+            <li><a href="{{ path('app_sortie_filter', {'planner' : 'organisteur'}) }}">Sorties dont je suis l'organisateur/trice</a></li>
+            <li><a href="{{ path('app_sortie_filter', {'members' : 'inscrit'}) }}">Sorties auxquelles je suis inscrit/e</a></li>
+            <li><a href="{{ path('app_sortie_filter', {'members' : 'noInscrit'}) }}">Sorties auxquelles je ne suis pas inscrit/e</a></li>
+            <li><a href="{{ path('app_sortie_filter', {'status' : 'terminée'}) }}">Sortie passées</a></li>
+        </ul>
+    </section>
     <table class="table">
         <thead>
             <tr>
