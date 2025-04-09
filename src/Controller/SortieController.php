@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Sortie;
+use App\EntityListener\SortieArchiver;
 use App\Form\SortieType;
 use App\Repository\EtatRepository;
 use App\Repository\SiteRepository;
@@ -21,7 +22,8 @@ final class SortieController extends AbstractController
 {
 
     public function __construct(private EntityManagerInterface $entityManager,
-                                private EtatRepository $etatRepository)
+                                private EtatRepository $etatRepository
+                                 )
 
     {
     }
@@ -32,9 +34,11 @@ final class SortieController extends AbstractController
      * @return Response
      */
     #[Route(name: 'app_sortie_index', methods: ['GET'])]
-    public function index(SortieRepository $sortieRepository, SiteRepository $siteRepository): Response
+    public function index(SortieRepository $sortieRepository, SiteRepository $siteRepository, SortieArchiver $sortieArchiver): Response
     {
         $sorties = $sortieRepository->findAll();
+        // APPELLER SERVICE SORTIEaRCHIVER
+        $sortieArchiver->archiverSorties();
 
         return $this->render('sortie/index.html.twig', [
             'sorties' => $sorties,

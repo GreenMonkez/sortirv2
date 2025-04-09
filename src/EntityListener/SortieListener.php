@@ -31,7 +31,6 @@ class SortieListener
         $finished = $sortie->getStartAt()->add(new \DateInterval('PT' . $sortie->getDuration() . 'M'));
         $inscriptionStart = $sortie->getRegisterStartAt();
 
-//dd($finished, $now, $sortieDate, $limitInscriptionDate, $inscriptionStart);
 
         if ($sortieDate < $now && $finished >= $now) {
             $etat = $this->em->getRepository(Etat::class)->find(1);// En cours
@@ -47,4 +46,6 @@ class SortieListener
             $sortie->setStatus($etat);
 
         }}
+
+
 }

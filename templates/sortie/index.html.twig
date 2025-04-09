@@ -49,24 +49,26 @@
         </thead>
         <tbody>
         {% for sortie in sorties %}
-            <tr>
+            {% if sortie.isArchive is same as false %}
+                <tr>
 
-                <td>{{ sortie.nom }}</td>
-                <td>{{ sortie.startAt ? sortie.startAt|date('Y-m-d H:i:s') : '' }}</td>
+                    <td>{{ sortie.nom }}</td>
+                    <td>{{ sortie.startAt ? sortie.startAt|date('Y-m-d H:i:s') : '' }}</td>
 
 
-                <td>{{ sortie.limitMembers }}</td>
-                <td>{{ sortie.status.name }}</td>
+                    <td>{{ sortie.limitMembers }}</td>
+                    <td>{{ sortie.status.name }}</td>
 
-                <td>
-                    <a class="btn btn-primary" href="{{ path('app_sortie_show', {'id': sortie.id}) }}">show</a>
-                    {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user  %}
-                        <a class="btn btn-primary" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">edit</a>
+                    <td>
+                        <a class="btn btn-primary" href="{{ path('app_sortie_show', {'id': sortie.id}) }}">show</a>
+                        {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user  %}
+                            <a class="btn btn-primary" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">edit</a>
 
-                    {% endif %}
+                        {% endif %}
 
-                </td>
-            </tr>
+                    </td>
+                </tr>
+            {% endif %}
         {% else %}
             <tr>
                 <td colspan="10">no records found</td>

@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SortieRepository::class)]
@@ -123,8 +124,7 @@ class Sortie
     private ?\DateTimeImmutable $registerStartAt = null;
 
     #[ORM\Column]
-
-    private ?bool $isArchive = null;
+    private ?bool $isArchive = false;
 
     public function __construct()
     {
@@ -326,10 +326,9 @@ class Sortie
         return $this->isArchive;
     }
 
-    #[ORM\PrePersist]
-    public function setIsArchive(): static
+    public function setIsArchive(bool $archive): static
     {
-        $this->isArchive = false;
+        $this->isArchive = $archive;
 
         return $this;
     }

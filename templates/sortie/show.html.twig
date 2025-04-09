@@ -37,7 +37,11 @@
             </tr>
             <tr>
                 <th>Etat :</th>
-                <td>{{ sortie.status.name }}</td>
+                <td>{{ sortie.status.name }} </td>
+            </tr>
+            <tr>
+                <th>Archive :</th>
+                <td>{{ sortie.isArchive ? 'Oui' : 'Non' }}</td>
             </tr>
         </tbody>
     </table>
