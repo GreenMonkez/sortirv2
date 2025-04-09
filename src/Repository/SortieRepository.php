@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Sortie;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -52,6 +53,16 @@ class SortieRepository extends ServiceEntityRepository
             ->where('s.startAt BETWEEN :start AND :end')
             ->setParameter('start', $startDate->format('Y-m-d 00:00:00'))
             ->setParameter('end', $endDate->format('Y-m-d 23:59:59'))
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByUserNotParticipation(User $user): array
+    {
+        return $this->createQueryBuilder('s')
+            ->leftJoin('s.members', 'm')
+            ->where('m.id != :userId OR m.id IS NULL')
+            ->setParameter('userId', $user->getId())
             ->getQuery()
             ->getResult();
     }

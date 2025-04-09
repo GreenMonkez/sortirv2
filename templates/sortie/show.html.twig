@@ -36,6 +36,13 @@
                 <td>{{ sortie.description }}</td>
             </tr>
             <tr>
+                <th>Adresse :</th>
+                <td>{{ sortie.lieu.street }}, {{ sortie.lieu.postaleCode }} {{ sortie.lieu.city }}</td>
+            </tr>
+            <tr>
+                <th>Site :</th>
+                <td>{{ sortie.site.name }}</td>
+            <tr>
                 <th>Etat :</th>
                 <td>{{ sortie.status.name }}</td>
             </tr>
@@ -43,6 +50,18 @@
     </table>
 
     <a class="btn btn-primary" href="{{ path('app_sortie_index') }}">back to list</a>
+    {% if app.user and sortie.status.name is same as 'Ouverte' and not  sortie.members.contains(app.user) %}
+        <form method="post" action="{{ path('app_sortie_sub', {'id': sortie.id}) }}" style="display: inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('inscription' ~ sortie.id) }}">
+            <button type="submit" class="btn btn-primary">S'inscrire</button>
+        </form>
+    {% endif %}
+    {% if app.user and  sortie.members.contains(app.user) and (sortie.status.name is same as ('Ouverte') or sortie.status.name is same as ('Cloturée')) %}
+        <form method="post" action="{{ path('app_sortie_unSub', {'id': sortie.id}) }}" style="display: inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('desinscription' ~ sortie.id) }}">
+            <button type="submit" class="btn btn-primary">Se désister</button>
+        </form>
+    {% endif %}
 {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user  %}
     <a class="btn btn-primary" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">edit</a>
 

@@ -48,35 +48,37 @@ final class SortieController extends AbstractController
      * @param SortieRepository $sortieRepository
      * @return Response
      */
-    #[Route('/filter', name: 'app_sortie_filter', methods: ['GET'])]
-    public function filter(Request $request, SortieRepository $sortieRepository, SiteRepository $siteRepository): Response
-    {
-        $user = $this->getUser();
-        $filter = $request->query->all();
+#[Route('/filter', name: 'app_sortie_filter', methods: ['GET'])]
+public function filter(Request $request, SortieRepository $sortieRepository, SiteRepository $siteRepository): Response
+{
+    $user = $this->getUser();
+    $filter = $request->query->all();
 
-        if (isset($filter['start_date'], $filter['end_date']) && !empty($filter['start_date']) && !empty($filter['end_date'])) {
-            $sorties = $sortieRepository->findBetweenDates(new \DateTime($filter['start_date']), new \DateTime($filter['end_date']));
-        } elseif (isset($filter['search']) && !empty($filter['search'])) {
-            $sorties = $sortieRepository->findByKeyword($filter['search']);
-        } elseif (isset($filter['planner']) && $filter['planner'] === 'organisteur') {
-            $sorties = $sortieRepository->findBy(['planner' => $user]);
-        } elseif (isset($filter['members']) && $filter['members'] === 'inscrit') {
-            $sorties = $sortieRepository->findByUserParticipation($user, true);
-        } elseif (isset($filter['members']) && $filter['members'] === 'noInscrit') {
-            $sorties = $sortieRepository->findByUserParticipation($user, false);
-        } elseif (isset($filter['status']) && $filter['status'] === 'terminée') {
-            $sorties = $sortieRepository->findByStatus('terminée');
-        } elseif (isset($filter['site']) && !empty($filter['site'])) {
-            $sorties = $sortieRepository->findBy(['site' => $filter['site']]);
-        } else {
-            $sorties = $sortieRepository->findAll();
-        }
-
-        return $this->render('sortie/index.html.twig', [
-            'sorties' => $sorties,
-            'sites' => $siteRepository->findAll(),
-        ]);
+    if (isset($filter['start_date'], $filter['end_date']) && !empty($filter['start_date']) && !empty($filter['end_date'])) {
+        $sorties = $sortieRepository->findBetweenDates(new \DateTime($filter['start_date']), new \DateTime($filter['end_date']));
+    } elseif (isset($filter['search']) && !empty($filter['search'])) {
+        $sorties = $sortieRepository->findByKeyword($filter['search']);
+    } elseif (isset($filter['planner']) && $filter['planner'] === 'organisteur') {
+        $sorties = $sortieRepository->findBy(['planner' => $user]);
+    } elseif (isset($filter['members']) && $filter['members'] === 'inscrit') {
+        $sorties = $sortieRepository->findByUserParticipation($user, true);
+    } elseif (isset($filter['members']) && $filter['members'] === 'noInscrit') {
+        $sorties = $sortieRepository->findByUserNotParticipation($user);
+    }elseif (isset($filter['status']) && $filter['status'] === 'ouverte') {
+        $sorties = $sortieRepository->findByStatus('Ouverte');
+    } elseif (isset($filter['status']) && $filter['status'] === 'terminée') {
+        $sorties = $sortieRepository->findByStatus('Terminée');
+    } elseif (isset($filter['site']) && !empty($filter['site'])) {
+        $sorties = $sortieRepository->findBy(['site' => $filter['site']]);
+    } else {
+        $sorties = $sortieRepository->findAll();
     }
+
+    return $this->render('sortie/index.html.twig', [
+        'sorties' => $sorties,
+        'sites' => $siteRepository->findAll(),
+    ]);
+}
 
 
 
@@ -118,7 +120,7 @@ final class SortieController extends AbstractController
      * @return Response
      */
     #[Route('/{id}', name: 'app_sortie_show', methods: ['GET'])]
-    public function show(Sortie $sortie): Response
+    public function show(Sortie $sortie, SiteRepository $siteRepository): Response
     {
         $sortie= $this->entityManager->getRepository(Sortie::class)->find($sortie->getId());
         if (!$sortie) {
@@ -127,8 +129,84 @@ final class SortieController extends AbstractController
 
         return $this->render('sortie/show.html.twig', [
             'sortie' => $sortie,
+            'site' => $siteRepository->findAll(),
         ]);
     }
+
+   #[Route('/{id}/inscription', name: 'app_sortie_sub')]
+    public function inscription(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
+    {
+        $user = $this->getUser();
+
+        // Vérifiez si l'utilisateur est connecté
+        if (!$user) {
+            $this->addFlash('error', 'Vous devez être connecté pour vous inscrire.');
+            return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        // Vérifiez si le statut de la sortie est "ouverte"
+        if ($sortie->getStatus()->getName() !== 'Ouverte') {
+            $this->addFlash('error', 'Vous ne pouvez vous inscrire qu\'à des sorties ouvertes.');
+            return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        // Vérifiez si l'utilisateur est déjà inscrit
+        if ($sortie->getMembers()->contains($user)) {
+            $this->addFlash('error', 'Vous êtes déjà inscrit à cette sortie.');
+            return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        // Vérifiez si la sortie a atteint la limite d'inscriptions
+        if ($sortie->getMembers()->count() >= $sortie->getLimitMembers()) {
+            $this->addFlash('error', 'La sortie a atteint le nombre maximum de participants.');
+            return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+        }
+
+        // Vérifiez le token CSRF et inscrivez l'utilisateur
+        if ($this->isCsrfTokenValid('inscription' . $sortie->getId(), $request->getPayload()->getString('_token'))) {
+            $sortie->addMember($user);
+            $entityManager->flush();
+            $this->addFlash('success', 'Inscription réussie !');
+        }
+
+        return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+#[Route('/{id}/desinscription', name: 'app_sortie_unSub')]
+public function desinscription(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
+{
+    $user = $this->getUser();
+
+    // Vérifiez si l'utilisateur est connecté
+    if (!$user) {
+        $this->addFlash('error', 'Vous devez être connecté pour vous désinscrire.');
+        return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    // Vérifiez si l'utilisateur est inscrit à la sortie
+    if (!$sortie->getMembers()->contains($user)) {
+        $this->addFlash('error', 'Vous n\'êtes pas inscrit à cette sortie.');
+        return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    // Vérifiez si la sortie est ouverte ou clôturée
+    if ($sortie->getStatus()->getName() !== 'Ouverte' && $sortie->getStatus()->getName() !== 'Cloturée') {
+        $this->addFlash('error', 'Vous ne pouvez vous désinscrire que d\'une sortie ouverte ou clôturée.');
+        return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    // Vérifiez le token CSRF et désinscrivez l'utilisateur
+    if ($this->isCsrfTokenValid('desinscription' . $sortie->getId(), $request->request->get('_token'))) {
+        $sortie->removeMember($user);
+        $entityManager->persist($sortie); // Persist pour s'assurer que les changements sont suivis
+        $entityManager->flush();
+        $this->addFlash('success', 'Désinscription réussie !');
+    } else {
+        $this->addFlash('error', 'Token CSRF invalide.');
+    }
+
+    return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+}
 
     /**
      * Méthode permettant de modifier une sortie

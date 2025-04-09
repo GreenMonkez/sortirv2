@@ -29,7 +29,8 @@
             <li><a href="{{ path('app_sortie_filter', {'planner' : 'organisteur'}) }}">Sorties dont je suis l'organisateur/trice</a></li>
             <li><a href="{{ path('app_sortie_filter', {'members' : 'inscrit'}) }}">Sorties auxquelles je suis inscrit/e</a></li>
             <li><a href="{{ path('app_sortie_filter', {'members' : 'noInscrit'}) }}">Sorties auxquelles je ne suis pas inscrit/e</a></li>
-            <li><a href="{{ path('app_sortie_filter', {'status' : 'terminée'}) }}">Sortie passées</a></li>
+            <li><a href="{{ path('app_sortie_filter', {'status': 'ouverte'}) }}">Sorties ouvertes</a></li>
+            <li><a href="{{ path('app_sortie_filter', {'status' : 'terminée'}) }}">Sorties passées</a></li>
         </ul>
     </section>
     <table class="table">
@@ -52,16 +53,25 @@
             <tr>
 
                 <td>{{ sortie.nom }}</td>
-                <td>{{ sortie.startAt ? sortie.startAt|date('Y-m-d H:i:s') : '' }}</td>
-
-
-                <td>{{ sortie.limitMembers }}</td>
-                <td>{{ sortie.status.name }}</td>
-
+<td>{{ sortie.startAt ? sortie.startAt|date('Y-m-d H:i:s') : '' }}</td>
+<td>{{ sortie.members|length }} / {{ sortie.limitMembers }}</td>
+<td>{{ sortie.status.name }}</td>
                 <td>
-                    <a class="btn btn-primary" href="{{ path('app_sortie_show', {'id': sortie.id}) }}">show</a>
+                    <a class="btn btn-primary" href="{{ path('app_sortie_show', {'id': sortie.id}) }}">Show</a>
+                   {% if app.user and sortie.status.name is same as 'Ouverte' and not  sortie.members.contains(app.user) %}
+                    <form method="post" action="{{ path('app_sortie_sub', {'id': sortie.id}) }}" style="display: inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('inscription' ~ sortie.id) }}">
+                        <button type="submit" class="btn btn-primary">S'inscrire</button>
+                    </form>
+                    {% endif %}
+                    {% if app.user and  sortie.members.contains(app.user) and (sortie.status.name is same as ('Ouverte') or sortie.status.name is same as ('Cloturée')) %}
+                        <form method="post" action="{{ path('app_sortie_unSub', {'id': sortie.id}) }}" style="display: inline;">
+                            <input type="hidden" name="_token" value="{{ csrf_token('desinscription' ~ sortie.id) }}">
+                            <button type="submit" class="btn btn-primary">Se désister</button>
+                        </form>
+                    {% endif %}
                     {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user  %}
-                        <a class="btn btn-primary" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">edit</a>
+                        <a class="btn btn-primary" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">Edit</a>
 
                     {% endif %}
 
