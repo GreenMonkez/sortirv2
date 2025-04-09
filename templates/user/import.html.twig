@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}{{ parent() }} - Importer des utilisateurs{% endblock %}
+
+{% block body %}
+    <h1>Importer des utilisateurs via un fichier CSV</h1>
+
+    {{ form_start(form) }}
+    {{ form_row(form.csv_file) }}
+    <button class="btn btn-primary">Importer</button>
+    {{ form_end(form) }}
+
+    <a href="{{ path('app_user_index') }}" class="btn btn-secondary mt-3">Retour</a>
+{% endblock %}
