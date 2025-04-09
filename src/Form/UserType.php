@@ -51,6 +51,7 @@ class UserType extends AbstractType
                 'required' => false,
                 'constraints' => array(
                     new Length(array('min' => 6)),
+                    new NotBlank(array('message' => 'Veuillez entrer un mot de passe')),
                 ),
                 'first_options'  => array('label' => 'Mot de passe :'),
                 'second_options' => array('label' => 'Confirmation :'),
