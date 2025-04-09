@@ -16,28 +16,43 @@ class SortieRepository extends ServiceEntityRepository
         parent::__construct($registry, Sortie::class);
     }
 
-//    /**
-//     * @return Sortie[] Returns an array of Sortie objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('s.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+// src/Repository/SortieRepository.php
+    public function findByUserParticipation($user, bool $isInscrit): array
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->leftJoin('s.members', 'm')
+            ->where($isInscrit ? 'm = :user' : 'm != :user')
+            ->setParameter('user', $user);
 
-//    public function findOneBySomeField($value): ?Sortie
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        return $qb->getQuery()->getResult();
+    }
+
+    public function findByStatus(string $status): array
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.status', 'st')
+            ->where('st.name = :status')
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findByKeyword(string $keyword): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.nom LIKE :keyword')
+            ->setParameter('keyword', '%' . $keyword . '%')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findBetweenDates(\DateTime $startDate, \DateTime $endDate): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.startAt BETWEEN :start AND :end')
+            ->setParameter('start', $startDate->format('Y-m-d 00:00:00'))
+            ->setParameter('end', $endDate->format('Y-m-d 23:59:59'))
+            ->getQuery()
+            ->getResult();
+    }
 }

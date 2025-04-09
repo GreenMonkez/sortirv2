@@ -32,14 +32,53 @@ final class SortieController extends AbstractController
      * @return Response
      */
     #[Route(name: 'app_sortie_index', methods: ['GET'])]
-    public function index(SortieRepository $sortieRepository): Response
+    public function index(SortieRepository $sortieRepository, SiteRepository $siteRepository): Response
     {
         $sorties = $sortieRepository->findAll();
 
         return $this->render('sortie/index.html.twig', [
-            'sorties' => $sorties
+            'sorties' => $sorties,
+            'sites' => $siteRepository->findAll()
         ]);
     }
+
+    /**
+     * Méthode permettant de filtrer les sorties
+     * @param Request $request
+     * @param SortieRepository $sortieRepository
+     * @return Response
+     */
+    #[Route('/filter', name: 'app_sortie_filter', methods: ['GET'])]
+    public function filter(Request $request, SortieRepository $sortieRepository, SiteRepository $siteRepository): Response
+    {
+        $user = $this->getUser();
+        $filter = $request->query->all();
+
+        if (isset($filter['start_date'], $filter['end_date']) && !empty($filter['start_date']) && !empty($filter['end_date'])) {
+            $sorties = $sortieRepository->findBetweenDates(new \DateTime($filter['start_date']), new \DateTime($filter['end_date']));
+        } elseif (isset($filter['search']) && !empty($filter['search'])) {
+            $sorties = $sortieRepository->findByKeyword($filter['search']);
+        } elseif (isset($filter['planner']) && $filter['planner'] === 'organisteur') {
+            $sorties = $sortieRepository->findBy(['planner' => $user]);
+        } elseif (isset($filter['members']) && $filter['members'] === 'inscrit') {
+            $sorties = $sortieRepository->findByUserParticipation($user, true);
+        } elseif (isset($filter['members']) && $filter['members'] === 'noInscrit') {
+            $sorties = $sortieRepository->findByUserParticipation($user, false);
+        } elseif (isset($filter['status']) && $filter['status'] === 'terminée') {
+            $sorties = $sortieRepository->findByStatus('terminée');
+        } elseif (isset($filter['site']) && !empty($filter['site'])) {
+            $sorties = $sortieRepository->findBy(['site' => $filter['site']]);
+        } else {
+            $sorties = $sortieRepository->findAll();
+        }
+
+        return $this->render('sortie/index.html.twig', [
+            'sorties' => $sorties,
+            'sites' => $siteRepository->findAll(),
+        ]);
+    }
+
+
 
     /**
      * Méthode permettant de créer une sortie
@@ -64,7 +103,7 @@ final class SortieController extends AbstractController
             $this->entityManager->persist($sortie);
 
             $this->entityManager->flush();
-
+            $this->addFlash('success', 'Sortie créée avec succès !');
             return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -107,7 +146,7 @@ final class SortieController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
 
             $entityManager->flush();
-
+            $this->addFlash('success', 'Sortie modifiée avec succès !');
             return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
         }
 
@@ -130,6 +169,7 @@ final class SortieController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$sortie->getId(), $request->getPayload()->getString('_token'))) {
             $sortie->setStatus($this->etatRepository->find(6));
             $entityManager->flush();
+            $this->addFlash('success', 'Sortie annulée avec succès !');
         }
 
         return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
