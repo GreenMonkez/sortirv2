@@ -26,7 +26,7 @@ class UserFixtures extends Fixture
         // Create admin user
         $admin = new User();
         $admin->setPseudo($this->faker->userName);
-        $admin->setEmail($this->faker->email);
+        $admin->setEmail($this->faker->userName . '@campus-eni.fr');
         $admin->setRoles(['ROLE_ADMIN']);
         $admin->setPassword($this->hashI->hashPassword($admin, 'password'));
         $admin->setFirstName($this->faker->firstName);
@@ -40,8 +40,7 @@ class UserFixtures extends Fixture
         for ($i = 0; $i < 10; $i++) {
             $user = new User();
             $user->setPseudo($this->faker->userName);
-            $user->setEmail($this->faker->email);
-            $user->setRoles(['ROLE_USER']);
+            $user->setEmail($this->faker->userName . '@campus-eni.fr');
             $user->setPassword($this->hashI->hashPassword($user, 'password'));
             $user->setFirstName($this->faker->firstName);
             $user->setLastName($this->faker->lastName);
