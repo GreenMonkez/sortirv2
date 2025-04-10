@@ -2,10 +2,12 @@
 
 namespace App\Controller;
 
+use App\Entity\MotifAnnulation;
 use App\Entity\Sortie;
 use App\EntityListener\SortieArchiver;
 use App\Form\SortieType;
 use App\Repository\EtatRepository;
+use App\Repository\MotifAnnulationRepository;
 use App\Repository\SiteRepository;
 use App\Repository\SortieRepository;
 use App\Repository\UserRepository;
@@ -22,8 +24,8 @@ final class SortieController extends AbstractController
 {
 
     public function __construct(private EntityManagerInterface $entityManager,
-                                private EtatRepository $etatRepository
-                                 )
+                                private EtatRepository $etatRepository,
+                                 private MotifAnnulationRepository $motifAnnulationRepository,)
 
     {
     }
@@ -78,7 +80,8 @@ final class SortieController extends AbstractController
 
         return $this->render('sortie/index.html.twig', [
             'sorties' => $sorties,
-            'sites' => $siteRepository->findAll(),
+            'sites' => $siteRepository->findAll()
+
         ]);
     }
 
@@ -144,6 +147,7 @@ final class SortieController extends AbstractController
     #[Route('/{id}/edit', name: 'app_sortie_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
     {
+        $motifs = $this->motifAnnulationRepository->findAll();
         $form = $this->createForm(SortieType::class, $sortie);
         $form->handleRequest($request);
 
@@ -157,6 +161,7 @@ final class SortieController extends AbstractController
         return $this->render('sortie/edit.html.twig', [
             'sortie' => $sortie,
             'form' => $form,
+            'motifs' => $motifs,
         ]);
     }
 
@@ -167,15 +172,28 @@ final class SortieController extends AbstractController
      * @param EntityManagerInterface $entityManager
      * @return Response
      */
+
     #[Route('/{id}', name: 'app_sortie_delete', methods: ['POST'])]
     public function delete(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
     {
         if ($this->isCsrfTokenValid('delete'.$sortie->getId(), $request->getPayload()->getString('_token'))) {
             $sortie->setStatus($this->etatRepository->find(6));
+            $cancel = new MotifAnnulation();
+            $cancel = $this->motifAnnulationRepository->find($request->get('motif'));
+            if ($cancel === null) {
+                $this->addFlash('danger', 'Erreur lors de l\'annulation de la sortie !');
+                return $this->redirectToRoute('sortie/edit.html.twig', [], Response::HTTP_SEE_OTHER);
+            }
+            $cancel->setCommentaire($request->get('commentaire'));
+            $sortie->setMotifsCancel($cancel);
             $entityManager->flush();
             $this->addFlash('success', 'Sortie annulée avec succès !');
-        }
 
-        return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+        }
+        $this->addFlash('danger', 'Erreur lors de l\'annulation de la sortie !');
+        return $this->redirectToRoute('sortie/edit.html.twig', [], Response::HTTP_SEE_OTHER);
     }
+
+
 }

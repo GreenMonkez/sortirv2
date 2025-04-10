@@ -91,7 +91,7 @@ class Sortie
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $modifiedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'sorties', cascade: ['persist'])]
+    #[ORM\ManyToOne(inversedBy: 'sorties')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Lieu $lieu = null;
 
@@ -125,6 +125,9 @@ class Sortie
 
     #[ORM\Column]
     private ?bool $isArchive = false;
+
+    #[ORM\ManyToOne(inversedBy: 'sorties')]
+    private ?MotifAnnulation $motifsCancel = null;
 
     public function __construct()
     {
@@ -329,6 +332,18 @@ class Sortie
     public function setIsArchive(bool $archive): static
     {
         $this->isArchive = $archive;
+
+        return $this;
+    }
+
+    public function getMotifsCancel(): ?MotifAnnulation
+    {
+        return $this->motifsCancel;
+    }
+
+    public function setMotifsCancel(?MotifAnnulation $motifsCancel): static
+    {
+        $this->motifsCancel = $motifsCancel;
 
         return $this;
     }
