@@ -126,9 +126,13 @@ class Sortie
     #[ORM\Column]
     private ?bool $isArchive = false;
 
+#[ORM\OneToMany(mappedBy: 'sortie', targetEntity: NotificationLog::class, orphanRemoval: true)]
+private Collection $notificationLogs;
+
     public function __construct()
     {
         $this->members = new ArrayCollection();
+        $this->notificationLogs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -329,6 +333,32 @@ class Sortie
     public function setIsArchive(bool $archive): static
     {
         $this->isArchive = $archive;
+
+        return $this;
+    }
+
+    public function getNotificationLogs(): Collection
+    {
+        return $this->notificationLogs;
+    }
+
+    public function addNotificationLog(NotificationLog $notificationLog): static
+    {
+        if (!$this->notificationLogs->contains($notificationLog)) {
+            $this->notificationLogs->add($notificationLog);
+            $notificationLog->setSortie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotificationLog(NotificationLog $notificationLog): static
+    {
+        if ($this->notificationLogs->removeElement($notificationLog)) {
+            if ($notificationLog->getSortie() === $this) {
+                $notificationLog->setSortie(null);
+            }
+        }
 
         return $this;
     }

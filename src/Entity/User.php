@@ -109,10 +109,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $photo = null;
 
+   #[ORM\OneToMany(mappedBy: 'user', targetEntity: NotificationLog::class, orphanRemoval: true)]
+    private Collection $notificationLogs;
+
+
+
     public function __construct()
     {
         $this->sorties = new ArrayCollection();
         $this->sortiesPlannified = new ArrayCollection();
+        $this->notificationLogs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -327,4 +333,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+   public function getNotificationLogs(): Collection
+   {
+       return $this->notificationLogs;
+   }
+
+   public function addNotificationLog(NotificationLog $notificationLog): static
+   {
+       if (!$this->notificationLogs->contains($notificationLog)) {
+           $this->notificationLogs->add($notificationLog);
+           $notificationLog->setUser($this);
+       }
+
+       return $this;
+   }
+
+   public function removeNotificationLog(NotificationLog $notificationLog): static
+   {
+       if ($this->notificationLogs->removeElement($notificationLog)) {
+           if ($notificationLog->getUser() === $this) {
+               $notificationLog->setUser(null);
+           }
+       }
+
+       return $this;
+   }
+
+
 }

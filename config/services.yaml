@@ -29,3 +29,8 @@ services:
     App\EntityListener\SortieListener:
         tags:
             - { name: 'doctrine.orm.entity_listener', event: 'postLoad' }
+
+    #
+    App\EventListener\LoginListener:
+        tags:
+            - { name: kernel.event_listener, event: security.interactive_login, method: onLogin }

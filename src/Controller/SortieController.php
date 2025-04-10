@@ -13,6 +13,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -138,7 +140,7 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
     }
 
    #[Route('/{id}/inscription', name: 'app_sortie_sub')]
-    public function inscription(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
+    public function inscription(Request $request, Sortie $sortie, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $user = $this->getUser();
 
@@ -170,14 +172,32 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
         if ($this->isCsrfTokenValid('inscription' . $sortie->getId(), $request->getPayload()->getString('_token'))) {
             $sortie->addMember($user);
             $entityManager->flush();
-            $this->addFlash('success', 'Inscription réussie !');
+            // Envoi de l'email
+            $email = (new Email())
+                ->from('noreply@votreapp.com')
+                ->to($user->getEmail())
+                ->subject('Confirmation d\'inscription à la sortie')
+                ->text(sprintf(
+                    'Bonjour %s %s, vous êtes inscrit à la sortie "%s" prévue le %s.',
+                    $user->getFirstName(),
+                    $user->getLastName(),
+                    $sortie->getNom(),
+                    $sortie->getStartAt()->format('d/m/Y H:i')
+                ));
+
+            $mailer->send($email);
+
+            $this->addFlash('success', 'Inscription réussie ! Un email de confirmation vous a été envoyé.');
+        }
+        else {
+            $this->addFlash('error', 'Token CSRF invalide.');
         }
 
         return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
     }
 
 #[Route('/{id}/desinscription', name: 'app_sortie_unSub')]
-public function desinscription(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
+public function desinscription(Request $request, Sortie $sortie, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
 {
     $user = $this->getUser();
 
@@ -204,8 +224,23 @@ public function desinscription(Request $request, Sortie $sortie, EntityManagerIn
         $sortie->removeMember($user);
         $entityManager->persist($sortie); // Persist pour s'assurer que les changements sont suivis
         $entityManager->flush();
-        $this->addFlash('success', 'Désinscription réussie !');
-    } else {
+        $email = (new Email())
+            ->from('noreply@votreapp.com')
+            ->to($user->getEmail())
+            ->subject('Confirmation de désinscription à la sortie')
+            ->text(sprintf(
+                'Bonjour %s %s, vous êtes désinscrit de la sortie "%s" prévue le %s.',
+                $user->getFirstName(),
+                $user->getLastName(),
+                $sortie->getNom(),
+                $sortie->getStartAt()->format('d/m/Y H:i')
+            ));
+
+        $mailer->send($email);
+
+        $this->addFlash('success', 'Désinscription réussie ! Un email de confirmation vous a été envoyé.');
+    }
+    else {
         $this->addFlash('error', 'Token CSRF invalide.');
     }
 

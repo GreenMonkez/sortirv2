@@ -17,7 +17,7 @@
             </tr>
             <tr>
                 <th>Début de l'évènement le :</th>
-                <td>{{ sortie.startAt ? sortie.startAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ sortie.startAt ? sortie.startAt|format_datetime(locale='fr', pattern="EEEE dd MMMM YYYY") : ''  }}</td>
             </tr>
             <tr>
                 <th>Durée de l'évènement :</th>
@@ -25,11 +25,11 @@
             </tr>
             <tr>
                 <th>Fin des inscriptions le :</th>
-                <td>{{ sortie.limitSortieAt ? sortie.limitSortieAt|date('Y-m-d H:i:s') : '' }}</td>
+                <td>{{ sortie.limitSortieAt ? sortie.limitSortieAt|format_datetime(locale='fr', pattern="EEEE dd MMMM YYYY") : ''  }}</td>
             </tr>
             <tr>
                 <th>Limite d'inscriptions :</th>
-                <td>{{ sortie.limitMembers }}</td>
+                <td>{{ sortie.limitMembers }} personne(s)</td>
             </tr>
             <tr>
                 <th>Description :</th>
