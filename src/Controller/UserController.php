@@ -13,9 +13,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
 
 #[Route('/user')]
 final class UserController extends AbstractController
@@ -46,7 +50,9 @@ final class UserController extends AbstractController
     public function new(
         Request $request,
         EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
+        ResetPasswordHelperInterface $resetPasswordHelper,
+        MailerInterface $mailer
     ): Response
     {
         $user = new User();
@@ -77,16 +83,35 @@ final class UserController extends AbstractController
                 $user->setPhoto($newFilename);
             }
 
-            // Hash the password
+            // Generate a temporary password
+            $temporaryPassword = bin2hex(random_bytes(4));
             $user->setPassword(
                 $passwordHasher->hashPassword(
                     $user,
-                    'password'
+                    $temporaryPassword
                 )
             );
 
             $entityManager->persist($user);
             $entityManager->flush();
+
+            // Generate a reset token
+            $resetToken = $resetPasswordHelper->generateResetToken($user);
+
+            // Send the email
+            $email = (new Email())
+                ->from('sortirv2@campus-eni.fr')
+                ->to($user->getEmail())
+                ->subject('[Sortir V2] Bienvenue !')
+                ->html(sprintf(
+                    '<p>Kakou kakou %s,</p>
+                            <p>Un compte a été créé pour vous. Veuillez cliquer sur le lien ci-dessous pour définir votre mot de passe :</p>
+                            <p><a href="%s">Définir mon mot de passe</a></p>',
+                    $user->getFirstName(),
+                    $this->generateUrl('app_reset_password', ['token' => $resetToken->getToken()], UrlGeneratorInterface::ABSOLUTE_URL)
+                ));
+
+            $mailer->send($email);
 
             $this->addFlash('success', 'L\'utilisateur a bien été créé !');
 
@@ -237,7 +262,9 @@ final class UserController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         UserPasswordHasherInterface $passwordHasher,
-        SiteRepository $siteRepository
+        SiteRepository $siteRepository,
+        ResetPasswordHelperInterface $resetPasswordHelper,
+        MailerInterface $mailer
     ): Response {
         $form = $this->createForm(CsvUploadType::class);
         $form->handleRequest($request);
@@ -247,6 +274,7 @@ final class UserController extends AbstractController
 
             if ($csvFile) {
                 $filePath = $csvFile->getPathname();
+                $importedUsers = []; // Array to store imported users
                 $importedCount = 0; // Counter for imported users
                 $errors = []; // Array to store error messages
                 $seenEmails = []; // Array to track seen emails
@@ -260,13 +288,13 @@ final class UserController extends AbstractController
                             $data = array_map('trim', $data); // Remove whitespace from each field
 
                             // Check if the line has the correct number of fields
-                            if (count($data) !== 7) {
+                            if (count($data) !== 6) {
                                 $errors[] = 'Ligne invalide : ' . implode(', ', $data);
                                 continue;
                             }
 
                             // Map the CSV fields to variables
-                            [$email, $pseudo, $password, $lastName, $firstName, $phoneNumber, $siteName] = $data;
+                            [$email, $pseudo, $lastName, $firstName, $phoneNumber, $siteName] = $data;
 
                             // Validate the email
                             if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -310,16 +338,24 @@ final class UserController extends AbstractController
                             $user = new User();
                             $user->setEmail($email);
                             $user->setPseudo($pseudo);
-                            $user->setPassword($passwordHasher->hashPassword($user, $password));
                             $user->setLastName($lastName);
                             $user->setFirstName($firstName);
                             $user->setPhoneNumber($phoneNumber);
                             $user->setPhoto(null);
                             $user->setSite($site);
-                            $user->setRoles(['ROLE_USER']);
                             $user->setIsActive(true);
 
+                            // Generate a temporary password
+                            $temporaryPassword = bin2hex(random_bytes(4));
+                            $user->setPassword(
+                                $passwordHasher->hashPassword(
+                                    $user,
+                                    $temporaryPassword
+                                )
+                            );
+
                             $entityManager->persist($user);
+                            $importedUsers[] = $user;
                             $importedCount++;
                             $seenEmails[] = $email;
                             $seenPseudos[] = $pseudo;
@@ -328,6 +364,27 @@ final class UserController extends AbstractController
                         fclose($handle);
                         $entityManager->flush();
                         $entityManager->commit(); // Commit the transaction
+
+                        // Send emails to imported users
+                        foreach ($importedUsers as $importedUser){
+                            // Generate a reset token
+                            $resetToken = $resetPasswordHelper->generateResetToken($importedUser);
+
+                            // Send the email
+                            $email = (new Email())
+                                ->from('sortirv2@campus-eni.fr')
+                                ->to($importedUser->getEmail())
+                                ->subject('[Sortir V2] Bienvenue !')
+                                ->html(sprintf(
+                                    '<p>Kakou kakou %s,</p>
+                                            <p>Un compte a été créé pour vous. Veuillez cliquer sur le lien ci-dessous pour définir votre mot de passe :</p>
+                                            <p><a href="%s">Définir mon mot de passe</a></p>',
+                                    $importedUser->getFirstName(),
+                                    $this->generateUrl('app_reset_password', ['token' => $resetToken->getToken()], UrlGeneratorInterface::ABSOLUTE_URL)
+                                ));
+
+                            $mailer->send($email);
+                        }
 
                         $this->addFlash('success', "$importedCount utilisateurs importés avec succès.");
                     } catch (\Exception $e) {
