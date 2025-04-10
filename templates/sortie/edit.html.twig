@@ -9,5 +9,25 @@
 
     <a href="{{ path('app_sortie_index') }}">back to list</a>
 
-    {{ include('sortie/_delete_form.html.twig') }}
+   {% if (app.user is same as sortie.planner and sortie.status.id != 6) or is_granted('ROLE_ADMIN') and sortie.status.id != 6 %}
+       <a href="#" id="btn-delete" class="btn btn-danger">Delete</a>
+   {% endif %}
+
+
+
+    <div style="display: none;" id="delete-form">
+        {{ include('sortie/_delete_form.html.twig') }}
+    </div>
+
+    <script>
+        document.getElementById('btn-delete').addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default action
+            let deleteForm = document.getElementById('delete-form');
+            if (deleteForm.style.display === 'none') {
+                deleteForm.style.display = 'block';
+            } else {
+                deleteForm.style.display = 'none';
+            }
+        });
+    </script>
 {% endblock %}

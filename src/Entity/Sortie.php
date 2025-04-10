@@ -126,6 +126,9 @@ class Sortie
     #[ORM\Column]
     private ?bool $isArchive = false;
 
+    #[ORM\ManyToOne(inversedBy: 'sorties')]
+    private ?MotifAnnulation $motifsCancel = null;
+
 #[ORM\OneToMany(mappedBy: 'sortie', targetEntity: NotificationLog::class, orphanRemoval: true)]
 private Collection $notificationLogs;
 
@@ -359,6 +362,18 @@ private Collection $notificationLogs;
                 $notificationLog->setSortie(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getMotifsCancel(): ?MotifAnnulation
+    {
+        return $this->motifsCancel;
+    }
+
+    public function setMotifsCancel(?MotifAnnulation $motifsCancel): static
+    {
+        $this->motifsCancel = $motifsCancel;
 
         return $this;
     }

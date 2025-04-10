@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\Etat;
 use App\Entity\Lieu;
 use App\Entity\NotificationLog;
+use App\Entity\MotifAnnulation;
 use App\Entity\Site;
 use App\Entity\Sortie;
 use App\Entity\User;
@@ -33,7 +34,11 @@ class SortieFixtures extends Fixture implements DependentFixtureInterface
             $sortie->setSite($this->getReference('site-' . mt_rand(1, 4), Site::class));
             $sortie->setLieu($this->getReference('lieu-' . mt_rand(1, 10), Lieu::class));
             $sortie->setStatus($this->getReference('etat-' . mt_rand(1, 6), Etat::class));
-            $sortie->setPlanner($this->getReference('user-' . mt_rand(0, 9), User::class));
+            if ($sortie->getStatus()->getId() === 6) {
+                $sortie->setMotifsCancel($this->getReference('motif-' . mt_rand(1, 4), MotifAnnulation::class));
+            }
+            $sortie->setPlanner($this->getReference('user-' . mt_rand(0, 9 ), User::class));
+
 
             $manager->persist($sortie);
 
@@ -60,6 +65,7 @@ class SortieFixtures extends Fixture implements DependentFixtureInterface
             EtatFixtures::class,
             LieuFixtures::class,
             SiteFixtures::class,
+            MotifAnnulationFixtures::class,
         ];
     }
 }

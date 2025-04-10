@@ -46,10 +46,13 @@
                 <th>Etat :</th>
                 <td>{{ sortie.status.name }} </td>
             </tr>
-            <tr>
-                <th>Archive :</th>
-                <td>{{ sortie.isArchive ? 'Oui' : 'Non' }}</td>
-            </tr>
+            {% if sortie.motifsCancel is not empty %}
+                <tr>
+                    <th>Motif :</th>
+                    <td>{{ sortie.motifsCancel.name }}</td>
+                    <td>{{ sortie.motifsCancel.commentaire }}</td>
+                </tr>
+            {% endif %}
         </tbody>
     </table>
 

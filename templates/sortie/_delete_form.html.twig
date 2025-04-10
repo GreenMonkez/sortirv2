@@ -1,6 +1,23 @@
 
 
-<form method="post" action="{{ path('app_sortie_delete', {'id': sortie.id}) }}" onsubmit="return confirm('Are you sure you want to delete this item?');">
-    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sortie.id) }}">
-    <button class="btn btn-primary" >Delete</button>
-</form>
+
+    <form method="post" action="{{ path('app_sortie_delete', {'id': sortie.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette sortie ?');">
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sortie.id) }}">
+
+        <div class="form-group">
+            <label for="motif">Motif d'annulation :</label>
+            <select id="motif" name="motif" class="form-control" required>
+                <option value="">-- Sélectionnez un motif --</option>
+                {% for motif in motifs %}
+                    <option value="{{ motif.id }}">{{ motif.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="commentaire">Commentaire (facultatif) :</label>
+            <textarea id="commentaire" name="commentaire" class="form-control" rows="4" placeholder="Ajoutez un commentaire (facultatif)"></textarea>
+        </div>
+
+        <button class="btn btn-primary">Annuler la sortie</button>
+    </form>
