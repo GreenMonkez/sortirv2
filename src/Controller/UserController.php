@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\CsvUploadType;
+use App\Form\UserFilterType;
 use App\Form\UserType;
 use App\Repository\SiteRepository;
 use App\Repository\UserRepository;
@@ -32,16 +33,53 @@ final class UserController extends AbstractController
         Request $request
     ): Response
     {
-        $query = $userRepository->createQueryBuilder('u')->getQuery();
+        $form = $this->createForm(UserFilterType::class, null, [
+            'method' => 'GET',
+        ]);
+        $form->handleRequest($request);
+
+        $queryBuilder = $userRepository->createQueryBuilder('u');
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $filters = $form->getData();
+
+            if (!empty($filters['pseudo'])) {
+                $queryBuilder->andWhere('u.pseudo LIKE :pseudo')
+                    ->setParameter('pseudo', '%' . $filters['pseudo'] . '%');
+            }
+
+            if (!empty($filters['firstName'])) {
+                $queryBuilder->andWhere('u.firstName LIKE :firstName')
+                    ->setParameter('firstName', '%' . $filters['firstName'] . '%');
+            }
+
+            if (!empty($filters['lastName'])) {
+                $queryBuilder->andWhere('u.lastName LIKE :lastName')
+                    ->setParameter('lastName', '%' . $filters['lastName'] . '%');
+            }
+
+            if (!empty($filters['email'])) {
+                $queryBuilder->andWhere('u.email LIKE :email')
+                    ->setParameter('email', '%' . $filters['email'] . '%');
+            }
+
+            if (isset($filters['isActive'])) {
+                $queryBuilder->andWhere('u.isActive = :isActive')
+                    ->setParameter('isActive', $filters['isActive']);
+            }
+        }
+
+        $query = $queryBuilder->getQuery();
 
         $pagination = $paginator->paginate(
-            $query, // Query object
-            $request->query->getInt('page', 1), // Page number
-            10 // Limit per page
+            $query,
+            $request->query->getInt('page', 1),
+            10
         );
 
         return $this->render('user/index.html.twig', [
             'pagination' => $pagination,
+            'form' => $form,
         ]);
     }
 
@@ -188,17 +226,19 @@ final class UserController extends AbstractController
                 $user->setPhoto($newFilename);
             }
 
-            // Check if the password field is empty
-            $newPassword = $form->get('password')->getData();
-            if ($newPassword) {
-                $user->setPassword(
-                    $passwordHasher->hashPassword(
-                        $user,
-                        $newPassword
-                    )
-                );
-            } else {
-                $user->setPassword($oldPassword);
+            if (!$this->isGranted('ROLE_ADMIN')) {
+                // Check if the password field is empty
+                $newPassword = $form->get('password')->getData();
+                if ($newPassword) {
+                    $user->setPassword(
+                        $passwordHasher->hashPassword(
+                            $user,
+                            $newPassword
+                        )
+                    );
+                } else {
+                    $user->setPassword($oldPassword);
+                }
             }
 
             $entityManager->flush();

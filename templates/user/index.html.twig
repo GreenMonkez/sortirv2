@@ -1,5 +1,7 @@
 {% extends 'base.html.twig' %}
 
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
 {% block title %}{{ parent() }} - Index{% endblock %}
 
 {% block body %}
@@ -7,9 +9,19 @@
 
     <a href="{{ path('app_user_new') }}" class=" btn btn-primary mb-3">Créer utilisateur</a>
     <a href="{{ path('app_user_import') }}" class="btn btn-secondary mb-3">Importer utilisateurs</a>
-    <div class="pagination">
-        {{ knp_pagination_render(pagination) }}
+
+    {{ form_start(form) }}
+    <div class="row">
+        <div class="col-md-3">{{ form_row(form.pseudo) }}</div>
+        <div class="col-md-3">{{ form_row(form.firstName) }}</div>
+        <div class="col-md-3">{{ form_row(form.lastName) }}</div>
+        <div class="col-md-3">{{ form_row(form.email) }}</div>
+        <div class="col-md-3">{{ form_row(form.isActive) }}</div>
     </div>
+    <button class="btn btn-primary mb-3">Filtrer</button>
+    <a href="{{ path('app_user_index') }}" class="btn btn-secondary mb-3">Réinitialiser</a>
+    {{ form_end(form) }}
+
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead>
@@ -44,5 +56,9 @@
             {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <div class="pagination">
+        {{ knp_pagination_render(pagination) }}
     </div>
 {% endblock %}
