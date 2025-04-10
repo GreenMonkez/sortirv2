@@ -8,6 +8,7 @@ use App\Form\UserType;
 use App\Repository\SiteRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,11 +23,21 @@ final class UserController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     #[Route(name: 'app_user_index', methods: ['GET'])]
     public function index(
-        UserRepository $userRepository
+        UserRepository $userRepository,
+        PaginatorInterface $paginator,
+        Request $request
     ): Response
     {
+        $query = $userRepository->createQueryBuilder('u')->getQuery();
+
+        $pagination = $paginator->paginate(
+            $query, // Query object
+            $request->query->getInt('page', 1), // Page number
+            10 // Limit per page
+        );
+
         return $this->render('user/index.html.twig', [
-            'users' => $userRepository->findAll(),
+            'pagination' => $pagination,
         ]);
     }
 
