@@ -7,6 +7,9 @@
 
     <a href="{{ path('app_user_new') }}" class=" btn btn-primary mb-3">Créer utilisateur</a>
     <a href="{{ path('app_user_import') }}" class="btn btn-secondary mb-3">Importer utilisateurs</a>
+    <div class="pagination">
+        {{ knp_pagination_render(pagination) }}
+    </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead>
@@ -21,7 +24,7 @@
                 </tr>
             </thead>
             <tbody>
-            {% for user in users %}
+            {% for user in pagination %}
                 <tr>
                     <td>{{ user.pseudo }}</td>
                     <td>{{ user.firstName }}</td>
