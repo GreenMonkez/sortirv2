@@ -13,7 +13,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-#[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+#[UniqueEntity(fields: ['email'], message: 'Il y a déjà un compte avec cet email')]
+#[UniqueEntity(fields: ['pseudo'], message: 'Il y a déjà un compte avec ce pseudo')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -22,17 +23,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Assert\NotBlank(message: 'Email is required')]
-    #[Assert\Email(message: 'The email {{ value }} is not a valid email.')]
-    #[Assert\Length(
-        min: 6,
-        max: 180,
-        minMessage: 'Your email should be at least {{ limit }} characters',
-        maxMessage: 'Your email cannot be longer than {{ limit }} characters',
-    )]
+    #[Assert\NotBlank(message: 'Un email est requis')]
+    #[Assert\Email(message: 'L\'email {{ value }} n\'est pas un email valide')]
     #[Assert\Regex(
-        pattern: '/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/',
-        message: 'The email {{ value }} is not a valid email.',
+        pattern: '/^[a-zA-Z0-9._%+-]+@campus-eni\.fr$/',
+        message: 'L\'email doit appartenir au domaine @campus-eni.fr',
     )]
     private ?string $email = null;
 
@@ -49,28 +44,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Assert\Length(
         min: 6,
         max: 255,
-        minMessage: 'Your password should be at least {{ limit }} characters',
-        maxMessage: 'Your password cannot be longer than {{ limit }} characters',
+        minMessage: 'Votre mot de passe doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Votre mot de passe ne peut pas faire plus de {{ limit }} caractères',
     )]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'Last name is required')]
+    #[Assert\NotBlank(message: 'Le nom est requis')]
     #[Assert\Length(
         min: 2,
         max: 255,
-        minMessage: 'Your last name should be at least {{ limit }} characters',
-        maxMessage: 'Your last name cannot be longer than {{ limit }} characters',
+        minMessage: 'Votre nom doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Votre nom ne peut pas faire plus de {{ limit }} caractères',
     )]
     private ?string $lastName = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank(message: 'First name is required')]
+    #[Assert\NotBlank(message: 'Le prénom est requis')]
     #[Assert\Length(
         min: 2,
         max: 255,
-        minMessage: 'Your first name should be at least {{ limit }} characters',
-        maxMessage: 'Your first name cannot be longer than {{ limit }} characters',
+        minMessage: 'Votre prénom doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Votre prénom ne peut pas faire plus de {{ limit }} caractères',
     )]
     private ?string $firstName = null;
 
@@ -97,12 +92,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $sortiesPlannified;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Assert\NotBlank(message: 'Pseudo is required')]
+    #[Assert\NotBlank(message: 'Un pseudo est requis')]
     #[Assert\Length(
         min: 2,
         max: 255,
-        minMessage: 'Your pseudo should be at least {{ limit }} characters',
-        maxMessage: 'Your pseudo cannot be longer than {{ limit }} characters',
+        minMessage: 'Votre pseudo doit faire au moins {{ limit }} caractères',
+        maxMessage: 'Votre pseudo ne peut pas faire plus de {{ limit }} caractères',
     )]
     private ?string $pseudo = null;
 

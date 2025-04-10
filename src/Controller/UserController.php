@@ -70,7 +70,7 @@ final class UserController extends AbstractController
             $user->setPassword(
                 $passwordHasher->hashPassword(
                     $user,
-                    $form->get('password')->getData()
+                    'password'
                 )
             );
 
@@ -154,7 +154,6 @@ final class UserController extends AbstractController
 
             // Check if the password field is empty
             $newPassword = $form->get('password')->getData();
-
             if ($newPassword) {
                 $user->setPassword(
                     $passwordHasher->hashPassword(
@@ -196,13 +195,12 @@ final class UserController extends AbstractController
             // Get the old photo filename
             $oldPhoto = $user->getPhoto();
 
-            $user->setEmail('anonyme_' . uniqid() . '@example.com');
+            $user->setEmail('anonyme_' . uniqid() . '@campus-eni.fr');
             $user->setPseudo('Utilisateur_' . uniqid());
             $user->setFirstName('Anonyme');
             $user->setLastName('Anonyme');
             $user->setPhoneNumber(null);
             $user->setIsActive(false);
-            $user->setRoles(['ROLE_ANONYMOUS']);
             $user->setPassword('');
             $user->setPhoto(null);
 
