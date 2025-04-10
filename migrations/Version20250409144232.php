@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250407100141 extends AbstractMigration
+final class Version20250409144232 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -24,28 +24,25 @@ final class Version20250407100141 extends AbstractMigration
             CREATE TABLE etat (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE lieu (id INT AUTO_INCREMENT NOT NULL, ville_id INT NOT NULL, name VARCHAR(255) NOT NULL, street VARCHAR(255) NOT NULL, latitude DOUBLE PRECISION DEFAULT NULL, longitude DOUBLE PRECISION DEFAULT NULL, INDEX IDX_2F577D59A73F0036 (ville_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE lieu (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, street VARCHAR(255) NOT NULL, latitude DOUBLE PRECISION DEFAULT NULL, longitude DOUBLE PRECISION DEFAULT NULL, city VARCHAR(255) NOT NULL, postale_code VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
+        $this->addSql(<<<'SQL'
+            CREATE TABLE notification_log (id INT AUTO_INCREMENT NOT NULL, notified_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE site (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE sortie (id INT AUTO_INCREMENT NOT NULL, status_id INT NOT NULL, lieu_id INT NOT NULL, site_id INT NOT NULL, planner_id INT NOT NULL, nom VARCHAR(255) NOT NULL, start_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', duration SMALLINT NOT NULL, limit_sortie_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', limit_members INT NOT NULL, description LONGTEXT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', modified_at DATETIME DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)', INDEX IDX_3C3FD3F26BF700BD (status_id), INDEX IDX_3C3FD3F26AB213CC (lieu_id), INDEX IDX_3C3FD3F2F6BD1646 (site_id), INDEX IDX_3C3FD3F25346EAE1 (planner_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE sortie (id INT AUTO_INCREMENT NOT NULL, status_id INT NOT NULL, lieu_id INT NOT NULL, site_id INT NOT NULL, planner_id INT NOT NULL, notification_log_id INT NOT NULL, nom VARCHAR(255) NOT NULL, start_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', duration SMALLINT NOT NULL, limit_sortie_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', limit_members INT NOT NULL, description LONGTEXT DEFAULT NULL, created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', modified_at DATETIME DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)', register_start_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', is_archive TINYINT(1) NOT NULL, INDEX IDX_3C3FD3F26BF700BD (status_id), INDEX IDX_3C3FD3F26AB213CC (lieu_id), INDEX IDX_3C3FD3F2F6BD1646 (site_id), INDEX IDX_3C3FD3F25346EAE1 (planner_id), INDEX IDX_3C3FD3F22EC0A3DB (notification_log_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, site_id INT NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) DEFAULT NULL, is_active TINYINT(1) NOT NULL, INDEX IDX_8D93D649F6BD1646 (site_id), UNIQUE INDEX UNIQ_IDENTIFIER_EMAIL (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE user (id INT AUTO_INCREMENT NOT NULL, site_id INT NOT NULL, notification_log_id INT NOT NULL, email VARCHAR(180) NOT NULL, roles JSON NOT NULL, password VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) DEFAULT NULL, is_active TINYINT(1) NOT NULL, pseudo VARCHAR(255) NOT NULL, photo VARCHAR(255) DEFAULT NULL, UNIQUE INDEX UNIQ_8D93D64986CC499D (pseudo), INDEX IDX_8D93D649F6BD1646 (site_id), INDEX IDX_8D93D6492EC0A3DB (notification_log_id), UNIQUE INDEX UNIQ_IDENTIFIER_EMAIL (email), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE user_sortie (user_id INT NOT NULL, sortie_id INT NOT NULL, INDEX IDX_596DC8CFA76ED395 (user_id), INDEX IDX_596DC8CFCC72D953 (sortie_id), PRIMARY KEY(user_id, sortie_id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE ville (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, postal_code VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
-        SQL);
-        $this->addSql(<<<'SQL'
             CREATE TABLE messenger_messages (id BIGINT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, headers LONGTEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', available_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', delivered_at DATETIME DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)', INDEX IDX_75EA56E0FB7336F0 (queue_name), INDEX IDX_75EA56E0E3BD61CE (available_at), INDEX IDX_75EA56E016BA31DB (delivered_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
-        SQL);
-        $this->addSql(<<<'SQL'
-            ALTER TABLE lieu ADD CONSTRAINT FK_2F577D59A73F0036 FOREIGN KEY (ville_id) REFERENCES ville (id)
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE sortie ADD CONSTRAINT FK_3C3FD3F26BF700BD FOREIGN KEY (status_id) REFERENCES etat (id)
@@ -60,7 +57,13 @@ final class Version20250407100141 extends AbstractMigration
             ALTER TABLE sortie ADD CONSTRAINT FK_3C3FD3F25346EAE1 FOREIGN KEY (planner_id) REFERENCES user (id)
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE sortie ADD CONSTRAINT FK_3C3FD3F22EC0A3DB FOREIGN KEY (notification_log_id) REFERENCES notification_log (id)
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE user ADD CONSTRAINT FK_8D93D649F6BD1646 FOREIGN KEY (site_id) REFERENCES site (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE user ADD CONSTRAINT FK_8D93D6492EC0A3DB FOREIGN KEY (notification_log_id) REFERENCES notification_log (id)
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE user_sortie ADD CONSTRAINT FK_596DC8CFA76ED395 FOREIGN KEY (user_id) REFERENCES user (id) ON DELETE CASCADE
@@ -74,9 +77,6 @@ final class Version20250407100141 extends AbstractMigration
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql(<<<'SQL'
-            ALTER TABLE lieu DROP FOREIGN KEY FK_2F577D59A73F0036
-        SQL);
-        $this->addSql(<<<'SQL'
             ALTER TABLE sortie DROP FOREIGN KEY FK_3C3FD3F26BF700BD
         SQL);
         $this->addSql(<<<'SQL'
@@ -89,7 +89,13 @@ final class Version20250407100141 extends AbstractMigration
             ALTER TABLE sortie DROP FOREIGN KEY FK_3C3FD3F25346EAE1
         SQL);
         $this->addSql(<<<'SQL'
+            ALTER TABLE sortie DROP FOREIGN KEY FK_3C3FD3F22EC0A3DB
+        SQL);
+        $this->addSql(<<<'SQL'
             ALTER TABLE user DROP FOREIGN KEY FK_8D93D649F6BD1646
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE user DROP FOREIGN KEY FK_8D93D6492EC0A3DB
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE user_sortie DROP FOREIGN KEY FK_596DC8CFA76ED395
@@ -104,6 +110,9 @@ final class Version20250407100141 extends AbstractMigration
             DROP TABLE lieu
         SQL);
         $this->addSql(<<<'SQL'
+            DROP TABLE notification_log
+        SQL);
+        $this->addSql(<<<'SQL'
             DROP TABLE site
         SQL);
         $this->addSql(<<<'SQL'
@@ -114,9 +123,6 @@ final class Version20250407100141 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE user_sortie
-        SQL);
-        $this->addSql(<<<'SQL'
-            DROP TABLE ville
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE messenger_messages
