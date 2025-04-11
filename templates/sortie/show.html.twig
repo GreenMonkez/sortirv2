@@ -3,75 +3,90 @@
 {% block title %}Sortie{% endblock %}
 
 {% block body %}
-    <h1>Sortie</h1>
+   <h1 class="text-center mb-4" style="color: #66563C">{{ sortie.nom }}</h1>
 
-    <table class="table">
+    <table class="table table-bordered" style="background-color: #E0FFFF; color: #66563C; border-radius: 8px;">
         <tbody>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Nom de l'évènement :</th>
+            <td>{{ sortie.nom }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Organisateur :</th>
+            <td>{{ sortie.planner.firstName }} {{ sortie.planner.lastName }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Début de l'évènement le :</th>
+            <td>{{ sortie.startAt ? sortie.startAt|format_datetime(locale='fr', pattern="EEEE dd MMMM YYYY") : '' }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Durée de l'évènement :</th>
+            <td>{{ sortie.duration /60 }} heures</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Fin des inscriptions le :</th>
+            <td>{{ sortie.limitSortieAt ? sortie.limitSortieAt|format_datetime(locale='fr', pattern="EEEE dd MMMM YYYY") : '' }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Limite d'inscriptions :</th>
+            <td>{{ sortie.limitMembers }} personne(s)</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Description :</th>
+            <td>{{ sortie.description }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Adresse :</th>
+            <td>{{ sortie.lieu.street }}, {{ sortie.lieu.postaleCode }} {{ sortie.lieu.city }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Site :</th>
+            <td>{{ sortie.site.name }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Etat :</th>
+            <td>{{ sortie.status.name }}</td>
+        </tr>
+        {% if sortie.motifsCancel is not empty %}
             <tr>
-                <th>Nom de l'évènement :</th>
-                <td>{{ sortie.nom }}</td>
+                <th style="background-color: #B0E0E6; color: #66563C;">Motif :</th>
+                <td>{{ sortie.motifsCancel.name }}</td>
+                <td>{{ sortie.motifsCancel.commentaire }}</td>
             </tr>
-            <tr>
-                <th>Organisateur :</th>
-                <td>{{ sortie.planner.firstName }} {{ sortie.planner.lastName }}</td>
-            </tr>
-            <tr>
-                <th>Début de l'évènement le :</th>
-                <td>{{ sortie.startAt ? sortie.startAt|format_datetime(locale='fr', pattern="EEEE dd MMMM YYYY") : ''  }}</td>
-            </tr>
-            <tr>
-                <th>Durée de l'évènement :</th>
-                <td>{{ sortie.duration /60}} heures</td>
-            </tr>
-            <tr>
-                <th>Fin des inscriptions le :</th>
-                <td>{{ sortie.limitSortieAt ? sortie.limitSortieAt|format_datetime(locale='fr', pattern="EEEE dd MMMM YYYY") : ''  }}</td>
-            </tr>
-            <tr>
-                <th>Limite d'inscriptions :</th>
-                <td>{{ sortie.limitMembers }} personne(s)</td>
-            </tr>
-            <tr>
-                <th>Description :</th>
-                <td>{{ sortie.description }}</td>
-            </tr>
-            <tr>
-                <th>Adresse :</th>
-                <td>{{ sortie.lieu.street }}, {{ sortie.lieu.postaleCode }} {{ sortie.lieu.city }}</td>
-            </tr>
-            <tr>
-                <th>Site :</th>
-                <td>{{ sortie.site.name }}</td>
-            <tr>
-                <th>Etat :</th>
-                <td>{{ sortie.status.name }} </td>
-            </tr>
-            {% if sortie.motifsCancel is not empty %}
-                <tr>
-                    <th>Motif :</th>
-                    <td>{{ sortie.motifsCancel.name }}</td>
-                    <td>{{ sortie.motifsCancel.commentaire }}</td>
-                </tr>
-            {% endif %}
+        {% endif %}
         </tbody>
     </table>
 
-    <a class="btn btn-primary" href="{{ path('app_sortie_index') }}">back to list</a>
+    <a class="btn btn-primary" href="{{ path('app_sortie_index') }}">Back to list</a>
     {% if app.user and sortie.status.name is same as 'Ouverte' and not  sortie.members.contains(app.user) %}
         <form method="post" action="{{ path('app_sortie_sub', {'id': sortie.id}) }}" style="display: inline;">
             <input type="hidden" name="_token" value="{{ csrf_token('inscription' ~ sortie.id) }}">
-            <button type="submit" class="btn btn-primary">S'inscrire</button>
+            <button type="submit" class="btn btn-success">S'inscrire</button>
         </form>
     {% endif %}
     {% if app.user and  sortie.members.contains(app.user) and (sortie.status.name is same as ('Ouverte') or sortie.status.name is same as ('Cloturée')) %}
         <form method="post" action="{{ path('app_sortie_unSub', {'id': sortie.id}) }}" style="display: inline;">
             <input type="hidden" name="_token" value="{{ csrf_token('desinscription' ~ sortie.id) }}">
-            <button type="submit" class="btn btn-primary">Se désister</button>
+            <button type="submit" class="btn btn-warning">Se désister</button>
         </form>
     {% endif %}
-{% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user  %}
-    <a class="btn btn-primary" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">edit</a>
+    {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user  %}
+        <a class="btn btn-warning" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">Edit</a>
+        <a href="#" id="btn-delete" class="btn btn-danger">Delete</a>
+        <div style="display: none;" id="delete-form">
+            {{ include('sortie/_delete_form.html.twig') }}
+        </div>
 
-    {{ include('sortie/_delete_form.html.twig') }}
-{% endif %}
+        <script>
+            document.getElementById('btn-delete').addEventListener('click', function(event) {
+                event.preventDefault(); // Prevent the default action
+                let deleteForm = document.getElementById('delete-form');
+                if (deleteForm.style.display === 'none') {
+                    deleteForm.style.display = 'block';
+                } else {
+                    deleteForm.style.display = 'none';
+                }
+            });
+        </script>
+    {% endif %}
 {% endblock %}

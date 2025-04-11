@@ -5,12 +5,14 @@
 {% block title %}{{ parent() }} - Importer des utilisateurs{% endblock %}
 
 {% block body %}
-    <h1>Importer des utilisateurs via un fichier CSV</h1>
+    <h1 class="mt-5 mb-3" style="color: #66563C  ;">Importer des utilisateurs via un fichier CSV</h1>
 
     {{ form_start(form) }}
     {{ form_row(form.csv_file) }}
-    <button class="btn btn-primary">Importer</button>
+    <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-success">Importer</button>
+        <a href="{{ path('app_user_index') }}" class="btn btn-danger">Retour</a>
+    </div>
     {{ form_end(form) }}
 
-    <a href="{{ path('app_user_index') }}" class="btn btn-secondary mt-3">Retour</a>
 {% endblock %}

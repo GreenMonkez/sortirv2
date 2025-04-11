@@ -1,11 +1,10 @@
 
 
-
-    <form method="post" action="{{ path('app_sortie_delete', {'id': sortie.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette sortie ?');">
-        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sortie.id) }}">
-
+<form id="delete-form" method="post" action="{{ path('app_sortie_delete', {'id': sortie.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir annuler cette sortie ?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sortie.id) }}">
+    {% if sortie.motifsCancel is empty %}
         <div class="form-group">
-            <label for="motif">Motif d'annulation :</label>
+            <label class="form-label mt-2" for="motif">Motif d'annulation :</label>
             <select id="motif" name="motif" class="form-control" required>
                 <option value="">-- Sélectionnez un motif --</option>
                 {% for motif in motifs %}
@@ -15,9 +14,24 @@
         </div>
 
         <div class="form-group">
-            <label for="commentaire">Commentaire (facultatif) :</label>
+            <label class="form-label mt-2" for="commentaire">Commentaire (facultatif) :</label>
             <textarea id="commentaire" name="commentaire" class="form-control" rows="4" placeholder="Ajoutez un commentaire (facultatif)"></textarea>
         </div>
 
-        <button class="btn btn-primary">Annuler la sortie</button>
-    </form>
+        <button class="btn btn-danger mt-3">Annuler la sortie</button>
+    {% else %}
+        <p class="text-danger mt-3">* Cette sortie a déjà été annulée avec le motif : {{ sortie.motifsCancel.name }}</p>
+    {% endif %}
+</form>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const deleteButton = document.getElementById('delete-button');
+        const deleteForm = document.getElementById('delete-form');
+
+        deleteButton.addEventListener('click', function () {
+            deleteForm.style.display = 'block'; // Affiche le formulaire
+            deleteButton.style.display = 'none'; // Cache le bouton "Annuler la sortie"
+        });
+    });
+</script>

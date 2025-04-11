@@ -139,6 +139,7 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
         return $this->render('sortie/show.html.twig', [
             'sortie' => $sortie,
             'site' => $siteRepository->findAll(),
+            'motifs' => $this->motifAnnulationRepository->findAll(), // Récupération des motifs
         ]);
     }
 
@@ -260,7 +261,7 @@ public function desinscription(Request $request, Sortie $sortie, EntityManagerIn
     #[Route('/{id}/edit', name: 'app_sortie_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
     {
-        $motifs = $this->motifAnnulationRepository->findAll();
+
         $form = $this->createForm(SortieType::class, $sortie);
         $form->handleRequest($request);
 
@@ -274,12 +275,12 @@ public function desinscription(Request $request, Sortie $sortie, EntityManagerIn
         return $this->render('sortie/edit.html.twig', [
             'sortie' => $sortie,
             'form' => $form,
-            'motifs' => $motifs,
+            'motifs' => $this->motifAnnulationRepository->findAll(),
         ]);
     }
 
     /**
-     * Méthode permettant d'annuler une sortie
+     * Méthode permettant de supprimer une sortie
      * @param Request $request
      * @param Sortie $sortie
      * @param EntityManagerInterface $entityManager
@@ -288,9 +289,17 @@ public function desinscription(Request $request, Sortie $sortie, EntityManagerIn
     #[Route('/{id}', name: 'app_sortie_delete', methods: ['POST'])]
     public function delete(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
     {
+        if ($sortie->getPlanner() !== $this->getUser()) {
+            throw $this->createAccessDeniedException();
+        }
+        // Vérifiez si le statut de la sortie est "terminée" ou "annulée"
+        if ($sortie->getStatus()->getName() === 'Terminée' || $sortie->getStatus()->getName() === 'Annulée') {
+            $this->addFlash('error', 'Vous ne pouvez pas annuler une sortie déjà terminée ou annulée.');
+            return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+        }
+
         if ($this->isCsrfTokenValid('delete'.$sortie->getId(), $request->getPayload()->getString('_token'))) {
             $sortie->setStatus($this->etatRepository->find(6));
-            $cancel = new MotifAnnulation();
             $cancel = $this->motifAnnulationRepository->find($request->get('motif'));
             if ($cancel === null) {
                 $this->addFlash('danger', 'Erreur lors de l\'annulation de la sortie !');
