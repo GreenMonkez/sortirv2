@@ -1,11 +1,11 @@
 {% extends 'base.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
 
 {% block title %}New Sortie{% endblock %}
 
 {% block body %}
-    <h1>Create new Sortie</h1>
-
-    {{ include('sortie/_form.html.twig') }}
-
-    <a href="{{ path('app_sortie_index') }}">back to list</a>
+    <h1 style="color: #66563C">Create new Sortie</h1>
+    <section class="container my-4" style="background-color: #AEEBE7; padding: 20px; border-radius: 8px;">
+        {{ include('sortie/_form.html.twig') }}
+    </section>
 {% endblock %}

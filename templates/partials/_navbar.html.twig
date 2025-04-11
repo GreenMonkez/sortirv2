@@ -1,5 +1,5 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-	<div class="container-fluid">
+<nav class="navbar navbar-expand-lg navbar-light " style="background-color: #E0FFFF;">
+	<div class="container-fluid" style="background-color: #E0FFFF;">
 		<a class="navbar-brand" href="#">
 			<img src="{{ asset('images/logo.jpg') }}" alt="Logo de Sortir V2" width="30" height="30" class="d-inline-block align-text-top">
 			Sortir V2
@@ -30,6 +30,9 @@
 					</li>
 					<li class="nav-item">
 						<a class="nav-link" href="{{ path('app_logout') }}">Se déconnecter</a>
+					</li>
+					<li class="nav-item">
+						<p class="nav-link"> {{ app.user.firstName }} {{ app.user.lastName }}</p>
 					</li>
 				{% endif %}
 			</ul>

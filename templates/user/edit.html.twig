@@ -4,7 +4,7 @@
 
 {% block body %}
 
-    <h1>Mon profil</h1>
+    <h1 class="mt-md-3 " style="color: #66563C">Mon profil</h1>
     <div class=" d-flex align-items-start">
         {% if user.photo %}
             <img src="{{ asset('uploads/photo/' ~ user.photo) }}" alt="Photo de profil de {{ user.pseudo|e }}" class=" img-thumbnail me-3" style="width: 150px; height: 150px;">
@@ -13,15 +13,11 @@
         {% endif %}
         <div class=" flex-grow-1">
             {{ include('user/_form.html.twig', {'button_label': 'Enregistrer'}) }}
+            {% if is_granted('ROLE_ADMIN') %}
+                {{ include('user/_delete_form.html.twig') }}
+            {% endif %}
         </div>
+
     </div>
-
-    <a href="{{ path('app_sortie_index') }}" class="btn btn-secondary mt-3">Annuler</a>
-
-    {% if is_granted('ROLE_ADMIN') %}
-        {{ include('user/_delete_form.html.twig') }}
-
-        <a href="{{ path('app_user_index') }}" class="btn btn-secondary mt-3">Retour aux utilisateurs</a>
-    {% endif %}
 
 {% endblock %}

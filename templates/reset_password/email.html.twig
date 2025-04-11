@@ -1,9 +1,15 @@
-<h1>Kakou kakou !</h1>
-
-<p>Pour réinitialiser votre mot de passe, veuillez visiter le lien suivant</p>
-
-<a href="{{ url('app_reset_password', {token: resetToken.token}) }}">{{ url('app_reset_password', {token: resetToken.token}) }}</a>
-
-<p>Ce lien expirera dans {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.</p>
-
-<p>Bisous !</p>
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title" style="color: #66563C">Kakou kakou !</h1>
+            <p class="card-text">Pour réinitialiser votre mot de passe, veuillez visiter le lien suivant :</p>
+            <a href="{{ url('app_reset_password', {token: resetToken.token}) }}" class="btn btn-sucess">
+                {{ url('app_reset_password', {token: resetToken.token}) }}
+            </a>
+            <p class="card-text mt-3">
+                Ce lien expirera dans <strong>{{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}</strong>.
+            </p>
+            <p class="card-text">Bisous !</p>
+        </div>
+    </div>
+</div>

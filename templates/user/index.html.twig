@@ -3,21 +3,21 @@
 {% block title %}{{ parent() }} - Index{% endblock %}
 
 {% block body %}
-    <h1>Liste utilisateurs</h1>
+    <h1 class="mt-5 mb-3" style="color: #66563C  ;">Liste utilisateurs</h1>
 
-    <a href="{{ path('app_user_new') }}" class=" btn btn-primary mb-3">Créer utilisateur</a>
-    <a href="{{ path('app_user_import') }}" class="btn btn-secondary mb-3">Importer utilisateurs</a>
+    <a href="{{ path('app_user_new') }}" class=" btn mb-3" style="background-color: #66563C ; color: white;">Créer utilisateur</a>
+    <a href="{{ path('app_user_import') }}" class="btn btn-success mb-3">Importer utilisateurs</a>
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
-                    <th>Pseudo</th>
-                    <th>Prénom</th>
-                    <th>Nom</th>
-                    <th>Téléphone</th>
-                    <th>Email</th>
-                    <th>Actif</th>
-                    <th>Actions</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Pseudo</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Prénom</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Nom</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Téléphone</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Email</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Actif</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -28,9 +28,11 @@
                     <td>{{ user.lastName }}</td>
                     <td>{{ user.phoneNumber }}</td>
                     <td>{{ user.email }}</td>
-                    <td>{{ user.isActive ? 'Oui' : 'Non' }}</td>
+                    <td class="{{ user.isActive ? 'text-success' : 'text-danger' }}">
+                        {{ user.isActive ? 'Oui' : 'Non' }}
+                    </td>
                     <td>
-                        <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-info btn-sm" >Détails</a>
+                        <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-primary btn-sm" >Détails</a>
                         <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-warning btn-sm">Modifier</a>
                     </td>
                 </tr>

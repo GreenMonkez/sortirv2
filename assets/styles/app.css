@@ -1,5 +1,18 @@
+body{
+    background-color: #fdebdd; /* Gris clair */
+
+}
+
 label.required:after{
     content: "*";
     color: red;
 
 }
+/** List  */
+
+.list-group-item:hover {
+    background-color: #d3d3d3; /* Gris clair */
+    color: #66563C; /* Conserve la couleur du texte */
+}
+
+

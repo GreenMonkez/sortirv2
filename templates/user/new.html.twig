@@ -3,10 +3,8 @@
 {% block title %}{{ parent() }} - Création{% endblock %}
 
 {% block body %}
-    <h1>Création utilisateur</h1>
+    <h1 class="text-center mb-4" style="color: #66563C">Création utilisateur</h1>
 
     {{ include('user/_form.html.twig') }}
-
-    <a href="{{ path('app_user_index') }}" class="btn btn-secondary">Annuler</a>
 
 {% endblock %}
