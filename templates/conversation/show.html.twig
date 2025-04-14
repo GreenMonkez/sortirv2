@@ -1,0 +1,36 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block body %}
+    <h1 class="mb-4">{{ conversation.name|default('Conversation sans titre') }}</h1>
+
+    <div class="messages-list">
+        {% if conversation.messages|length > 0 %}
+            {% for message in conversation.messages %}
+                <div class="message mb-3 p-3 border rounded">
+                    <strong class="text-primary">{{ message.sender.pseudo|default('Anonyme') }}</strong> :
+                    <span>{{ message.content|default('Message vide') }}</span>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-muted">Aucun message pour le moment.</p>
+        {% endif %}
+    </div>
+
+    <div class="message-form mt-4">
+        {{ form_start(form, {'attr': {'class': 'form-inline'}}) }}
+        <div class="form-group mb-2">
+            {{ form_row(form.content, {'attr': {'class': 'form-control', 'placeholder': 'Écrivez votre message...'}}) }}
+        </div>
+        <button type="submit" class="btn btn-primary ml-2">Envoyer</button>
+        <a href="{{ path('app_conversation') }}" class="btn btn-secondary ">Retour à la liste</a>
+        {{ form_end(form) }}
+    </div>
+
+{% endblock %}
+
+{% block title %}{{ parent() }} - {{ conversation.name }}
+
+{% endblock %}
+

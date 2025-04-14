@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ parent() }} - Conversations{% endblock %}
+
+{% block body %}
+        <h1 class="my-4">Conversations</h1>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <p class="text-muted">Vous avez {{ conversations|length }} conversation(s).</p>
+            <a href="{{ path('app_conversation_new') }}" class="btn btn-primary">Créer une nouvelle conversation</a>
+        </div>
+
+        {% for conversation in conversations %}
+            <a href="{{ path('app_conversation_show', {'id' : conversation.id}) }}" class="text-decoration-none">
+                <section class="card mb-3 shadow-sm rounded border border-light bg-light text-dark p-3">
+                    <h2 class="h5">{{ conversation.name }}</h2>
+                    <p class="mb-1">Participants ({{ conversation.participants|length }}):</p>
+                    <ul class="mb-2">
+                        {% for participant in conversation.participants %}
+                            <li>{{ participant.pseudo }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% if conversation.createdAt is defined %}
+                        <small class="text-muted">Créée le {{ conversation.createdAt|date('d/m/Y H:i') }}</small>
+                    {% endif %}
+                </section>
+            </a>
+        {% else %}
+            <p class="text-muted">Aucune conversation disponible.</p>
+        {% endfor %}
+
+{% endblock %}

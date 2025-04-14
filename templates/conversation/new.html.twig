@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}{{ parent() }} - Nouvelle conversation
+
+{% endblock %}
+
+{% block body %}
+
+    <h1 class="text-center mb-4">Créer une nouvelle conversation</h1>
+
+    <div class="card shadow-sm p-4">
+        {{ form_start(form) }}
+        <div class="mb-3">
+            {{ form_widget(form) }}
+        </div>
+        <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary">Créer</button>
+            <a href="{{ path('app_conversation') }}" class="btn btn-secondary">Annuler</a>
+        </div>
+        {{ form_end(form) }}
+    </div>
+
+{% endblock %}
+

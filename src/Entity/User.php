@@ -107,6 +107,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
    #[ORM\OneToMany(mappedBy: 'user', targetEntity: NotificationLog::class, orphanRemoval: true)]
     private Collection $notificationLogs;
 
+   /**
+    * @var Collection<int, Conversation>
+    */
+   #[ORM\ManyToMany(targetEntity: Conversation::class, mappedBy: 'participants')]
+   private Collection $conversations;
+
+   /**
+    * @var Collection<int, Message>
+    */
+   #[ORM\OneToMany(targetEntity: Message::class, mappedBy: 'sender')]
+   private Collection $sentMessages;
+
+   /**
+    * @var Collection<int, Conversation>
+    */
+   #[ORM\OneToMany(targetEntity: Conversation::class, mappedBy: 'creator')]
+   private Collection $createdConversations;
+
 
 
     public function __construct()
@@ -114,6 +132,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->sorties = new ArrayCollection();
         $this->sortiesPlannified = new ArrayCollection();
         $this->notificationLogs = new ArrayCollection();
+        $this->conversations = new ArrayCollection();
+        $this->sentMessages = new ArrayCollection();
+        $this->createdConversations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -349,6 +370,93 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
        if ($this->notificationLogs->removeElement($notificationLog)) {
            if ($notificationLog->getUser() === $this) {
                $notificationLog->setUser(null);
+           }
+       }
+
+       return $this;
+   }
+
+   /**
+    * @return Collection<int, Conversation>
+    */
+   public function getConversations(): Collection
+   {
+       return $this->conversations;
+   }
+
+   public function addConversation(Conversation $conversation): static
+   {
+       if (!$this->conversations->contains($conversation)) {
+           $this->conversations->add($conversation);
+           $conversation->addParticipant($this);
+       }
+
+       return $this;
+   }
+
+   public function removeConversation(Conversation $conversation): static
+   {
+       if ($this->conversations->removeElement($conversation)) {
+           $conversation->removeParticipant($this);
+       }
+
+       return $this;
+   }
+
+   /**
+    * @return Collection<int, Message>
+    */
+   public function getSentMessages(): Collection
+   {
+       return $this->sentMessages;
+   }
+
+   public function addSentMessage(Message $sentMessage): static
+   {
+       if (!$this->sentMessages->contains($sentMessage)) {
+           $this->sentMessages->add($sentMessage);
+           $sentMessage->setSender($this);
+       }
+
+       return $this;
+   }
+
+   public function removeSentMessage(Message $sentMessage): static
+   {
+       if ($this->sentMessages->removeElement($sentMessage)) {
+           // set the owning side to null (unless already changed)
+           if ($sentMessage->getSender() === $this) {
+               $sentMessage->setSender(null);
+           }
+       }
+
+       return $this;
+   }
+
+   /**
+    * @return Collection<int, Conversation>
+    */
+   public function getCreatedConversations(): Collection
+   {
+       return $this->createdConversations;
+   }
+
+   public function addCreatedConversation(Conversation $createdConversation): static
+   {
+       if (!$this->createdConversations->contains($createdConversation)) {
+           $this->createdConversations->add($createdConversation);
+           $createdConversation->setCreator($this);
+       }
+
+       return $this;
+   }
+
+   public function removeCreatedConversation(Conversation $createdConversation): static
+   {
+       if ($this->createdConversations->removeElement($createdConversation)) {
+           // set the owning side to null (unless already changed)
+           if ($createdConversation->getCreator() === $this) {
+               $createdConversation->setCreator(null);
            }
        }
 
