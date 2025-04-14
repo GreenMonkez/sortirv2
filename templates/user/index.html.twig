@@ -10,7 +10,6 @@
     <a href="{{ path('app_user_new') }}" class=" btn mb-3" style="background-color: #66563C ; color: white;">Créer utilisateur</a>
     <a href="{{ path('app_user_import') }}" class="btn btn-success mb-3">Importer utilisateurs</a>
 
-
     {{ form_start(form) }}
     <div class="row">
         <div class="col-md-3">{{ form_row(form.pseudo) }}</div>
@@ -26,8 +25,8 @@
     {{ form_end(form) }}
 
     <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead>
+        <table class="table table-bordered table-striped table-hover">
+            <thead class="table-light">
                 <tr>
                     <th style="background-color: #E0FFFF; color: #66563C">Pseudo</th>
                     <th style="background-color: #E0FFFF; color: #66563C">Prénom</th>
