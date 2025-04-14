@@ -38,10 +38,17 @@ class Site
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'site')]
     private Collection $users;
 
+    /**
+     * @var Collection<int, Group>
+     */
+    #[ORM\OneToMany(targetEntity: Group::class, mappedBy: 'site')]
+    private Collection $privateGroups;
+
     public function __construct()
     {
         $this->sorties = new ArrayCollection();
         $this->users = new ArrayCollection();
+        $this->privateGroups = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -115,6 +122,36 @@ class Site
             // set the owning side to null (unless already changed)
             if ($user->getSite() === $this) {
                 $user->setSite(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Group>
+     */
+    public function getPrivateGroups(): Collection
+    {
+        return $this->privateGroups;
+    }
+
+    public function addPrivateGroup(Group $privateGroup): static
+    {
+        if (!$this->privateGroups->contains($privateGroup)) {
+            $this->privateGroups->add($privateGroup);
+            $privateGroup->setSite($this);
+        }
+
+        return $this;
+    }
+
+    public function removePrivateGroup(Group $privateGroup): static
+    {
+        if ($this->privateGroups->removeElement($privateGroup)) {
+            // set the owning side to null (unless already changed)
+            if ($privateGroup->getSite() === $this) {
+                $privateGroup->setSite(null);
             }
         }
 

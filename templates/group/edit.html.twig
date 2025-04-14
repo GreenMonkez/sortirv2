@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Edit Group{% endblock %}
+
+{% block body %}
+    <h1 style="color: #66563C" >Edit Group</h1>
+<section class="container my-4" style="background-color: #AEEBE7; padding: 20px; border-radius: 8px;">
+
+        <div>
+            {{ include('group/_form.html.twig', {'button_label': 'Update'}) }}
+            <br>
+        </div>
+
+        {% if (app.user is same as group.owner) or is_granted('ROLE_ADMIN') %}
+            {{ include('group/_delete_form.html.twig') }}
+        {% endif %}
+</section>
+{% endblock %}

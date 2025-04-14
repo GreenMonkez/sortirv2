@@ -1,0 +1,60 @@
+
+
+{{ form_start(form) }}
+
+<div class="mb-3">
+    {{ form_label(form.name) }}
+    {{ form_widget(form.name, { attr: { class: 'form-control' } }) }}
+    {{ form_errors(form.name) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.description) }}
+    {{ form_widget(form.description, { attr: { class: 'form-control' } }) }}
+    {{ form_errors(form.description) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.site) }}
+    {{ form_widget(form.site, { attr: { class: 'form-select' } }) }}
+    {{ form_errors(form.site) }}
+</div>
+
+<div class="mb-3">
+    {{ form_label(form.teammate) }}
+    {{ form_widget(form.teammate, { attr: { class: 'form-select', multiple: 'multiple' } }) }}
+    {{ form_errors(form.teammate) }}
+</div>
+
+<div class="d-flex gap-2">
+    <button class="btn btn-success mt-2" type="submit">Create</button>
+    <a href="{{ path('app_group_index') }}" class="btn btn-primary mt-2">Back to list</a>
+</div>
+
+{{ form_end(form) }}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const siteSelect = document.querySelector('#{{ form.site.vars.id }}');
+        const teammateSelect = document.querySelector('#{{ form.teammate.vars.id }}');
+
+        if (!siteSelect || !teammateSelect) return;
+
+        siteSelect.addEventListener('change', function () {
+            const siteId = this.value;
+
+            fetch(`/user/ajax/users-by-site/${siteId}`)
+                .then(response => response.json())
+                .then(data => {
+                    teammateSelect.innerHTML = '';
+                    data.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user.id;
+                        option.text = user.name;
+                        teammateSelect.appendChild(option);
+                    });
+
+                });
+        });
+    });
+</script>
