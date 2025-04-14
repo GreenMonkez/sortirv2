@@ -171,8 +171,21 @@ public function filter(Request $request, GroupRepository $groupRepository, SiteR
     #[Route('/{id}', name: 'app_group_show', methods: ['GET'])]
     public function show(Group $group): Response
     {
+        $futureSorties = [];
+
+        // Récupérer les sorties futures des membres
+        foreach ($group->getTeammate() as $user) {
+            foreach ($user->getSorties() as $sortie) {
+                if ($sortie->getStartAt() > new \DateTimeImmutable()) {
+                    $futureSorties[] = $sortie;
+                }
+            }
+        }
+
+
         return $this->render('group/show.html.twig', [
             'group' => $group,
+            'futureSorties' => $futureSorties,
         ]);
     }
 

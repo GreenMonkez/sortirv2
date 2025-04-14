@@ -43,23 +43,24 @@
                         <td>{{ group.owner.firstName }} {{ group.owner.lastName }}</td>
                         <td>{{ group.teammate|length }}</td>
                         <td>
-                            {% if app.user and not group.teammate.contains(app.user)  %}
-                            <form method="post" action="{{ path('app_group_join', {'id': group.id}) }}">
-                                <input type="hidden" name="_token" value="{{ csrf_token('join' ~ group.id) }}">
-                                <button class="btn btn-success mb-2">Join</button>
-                            </form>
-                            {% endif %}
-                            {% if app.user and group.teammate.contains(app.user) %}
-                            <form method="post" action="{{ path('app_group_leave', {'id': group.id}) }}">
-                                <input type="hidden" name="_token" value="{{ csrf_token('leave' ~ group.id) }}">
-                                <button class="btn btn-danger mb-2">Leave</button>
-                            </form>
-                            {% endif %}
-
-                            {% if (app.user is same as group.owner) or is_granted('ROLE_ADMIN') %}
+                            <div class="d-flex gap-2">
                                 <a class="btn btn-primary" href="{{ path('app_group_show', {'id': group.id}) }}">Show</a>
+                                {% if app.user and not group.teammate.contains(app.user) %}
+                                <form method="post" action="{{ path('app_group_join', {'id': group.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('join' ~ group.id) }}">
+                                    <button class="btn btn-success">Join</button>
+                                </form>
+                                {% endif %}
+                                {% if app.user and group.teammate.contains(app.user) %}
+                                <form method="post" action="{{ path('app_group_leave', {'id': group.id}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('leave' ~ group.id) }}">
+                                    <button class="btn btn-danger">Leave</button>
+                                </form>
+                                {% endif %}
+                                {% if (app.user is same as group.owner) or is_granted('ROLE_ADMIN') %}
                                 <a href="{{ path('app_group_edit', {'id': group.id}) }}" class="btn btn-warning">Edit</a>
-                            {% endif %}
+                                {% endif %}
+                            </div>
                         </td>
                     </tr>
                 {% else %}

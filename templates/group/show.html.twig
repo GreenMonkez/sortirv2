@@ -3,6 +3,7 @@
 {% block title %}Group{% endblock %}
 
 {% block body %}
+
     <h1 class="text-center mb-4" style="color: #66563C">{{ group.name }}</h1>
 
     <table class="table table-bordered" style="background-color: #E0FFFF; color: #66563C; border-radius: 8px;">
@@ -37,4 +38,38 @@
         {{ include('group/_delete_form.html.twig') }}
     {% endif %}
 
+
+       <h2 class="text-center mb-4" style="color: #66563C">Prochaines sorties des membres</h2>
+        <table class="table table-bordered" style="background-color: #E0FFFF; color: #66563C; border-radius: 8px;">
+            <thead>
+                <tr>
+                    <th style="background-color: #B0E0E6; color: #66563C;">Titre</th>
+                    <th style="background-color: #B0E0E6; color: #66563C;">Description</th>
+                    <th style="background-color: #B0E0E6; color: #66563C;">Date</th>
+                    <th style="background-color: #B0E0E6; color: #66563C;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {%  if futureSorties is not empty %}
+                {% for sortie in futureSorties %}
+                    <tr>
+                        <td>{{ sortie.nom }}</td>
+                        <td>{{ sortie.description }}</td>
+                        <td>{{ sortie.startAt ? sortie.startAt|date('Y-m-d H:i:s') : '' }}</td>
+                        <td>
+                            <a class="btn btn-primary" href="{{ path('app_sortie_show', {'id': sortie.id}) }}">Show</a>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="3" class="text-center">Aucune sortie à venir.</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="3" class="text-center">Aucune sortie à venir.</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
 {% endblock %}
