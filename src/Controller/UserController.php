@@ -44,6 +44,8 @@ final class UserController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $filters = $form->getData();
+            $sort = $filters['sort'] ?? null;
+            $order = $filters['order'] ?? 'ASC';
 
             if (!empty($filters['pseudo'])) {
                 $queryBuilder->andWhere('u.pseudo LIKE :pseudo')
@@ -68,6 +70,10 @@ final class UserController extends AbstractController
             if (isset($filters['isActive'])) {
                 $queryBuilder->andWhere('u.isActive = :isActive')
                     ->setParameter('isActive', $filters['isActive']);
+            }
+
+            if ($sort) {
+                $queryBuilder->orderBy('u.' . $sort, $order);
             }
         }
 

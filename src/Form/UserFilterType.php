@@ -37,6 +37,25 @@ class UserFilterType extends AbstractType
                     'Non' => false,
                 ],
                 'placeholder' => 'Tous',
+            ])->add('sort', ChoiceType::class, [
+                'required' => false,
+                'label' => 'Trier par :',
+                'choices' => [
+                    'Pseudo' => 'pseudo',
+                    'Prénom' => 'firstName',
+                    'Nom' => 'lastName',
+                    'Email' => 'email',
+                ],
+                'placeholder' => 'Aucun',
+            ])
+            ->add('order', ChoiceType::class, [
+                'required' => false,
+                'label' => 'Ordre :',
+                'choices' => [
+                    'Ascendant' => 'ASC',
+                    'Descendant' => 'DESC',
+                ],
+                'placeholder' => 'Choisir un ordre',
             ]);
     }
 
