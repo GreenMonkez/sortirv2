@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Site;
 use App\Entity\User;
 use App\Form\CsvUploadType;
 use App\Form\UserFilterType;
@@ -12,6 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\MailerInterface;
@@ -455,4 +457,28 @@ final class UserController extends AbstractController
             'form' => $form,
         ]);
     }
+
+
+    #[Route('/ajax/users-by-site/{id}', name: 'ajax_users_by_site')]
+    public function getUsersBySite(Site $site, UserRepository $userRepository): JsonResponse
+    {
+
+
+        $users = $userRepository->createQueryBuilder('u')
+            ->where('u.site = :site')
+            ->setParameter('site', $site)
+            ->getQuery()
+            ->getResult();
+
+        $data = [];
+        foreach ($users as $user) {
+            $data[] = [
+                'id' => $user->getId(),
+                'name' => $user->getFirstname() . ' ' . $user->getLastname(),
+            ];
+        }
+
+        return new JsonResponse($data);
+    }
+
 }

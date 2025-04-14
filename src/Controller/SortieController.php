@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\MotifAnnulation;
+
 use App\Entity\Sortie;
 use App\EntityListener\SortieArchiver;
 use App\Form\SortieType;
@@ -41,7 +41,6 @@ final class SortieController extends AbstractController
     public function index(SortieRepository $sortieRepository, SiteRepository $siteRepository, SortieArchiver $sortieArchiver): Response
     {
         $sorties = $sortieRepository->findAll();
-        // APPELLER SERVICE SORTIEaRCHIVER
         $sortieArchiver->archiverSorties();
 
         return $this->render('sortie/index.html.twig', [
@@ -109,8 +108,10 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $sortie->setDuration($sortie->getDuration() * 60);
-                $sortie->setStatus($this->etatRepository->find(2));
+                $recupEtat = $this->etatRepository->findOneBy(['name' => 'Prochainement']);
+                $sortie->setStatus($recupEtat);
                 $sortie->setPlanner($this->getUser());
+                //dd($sortie);
             $this->entityManager->persist($sortie);
 
             $this->entityManager->flush();
@@ -299,7 +300,7 @@ public function desinscription(Request $request, Sortie $sortie, EntityManagerIn
         }
 
         if ($this->isCsrfTokenValid('delete'.$sortie->getId(), $request->getPayload()->getString('_token'))) {
-            $sortie->setStatus($this->etatRepository->find(6));
+            $sortie->setStatus($this->etatRepository->findOneBy(['name' => 'Annulée']));
             $cancel = $this->motifAnnulationRepository->find($request->get('motif'));
             if ($cancel === null) {
                 $this->addFlash('danger', 'Erreur lors de l\'annulation de la sortie !');

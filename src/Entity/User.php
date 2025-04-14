@@ -107,8 +107,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
    #[ORM\OneToMany(mappedBy: 'user', targetEntity: NotificationLog::class, orphanRemoval: true)]
     private Collection $notificationLogs;
 
-   /**
-    * @var Collection<int, Conversation>
+   /**    * @var Collection<int, Conversation>
     */
    #[ORM\ManyToMany(targetEntity: Conversation::class, mappedBy: 'participants')]
    private Collection $conversations;
@@ -125,6 +124,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
    #[ORM\OneToMany(targetEntity: Conversation::class, mappedBy: 'creator')]
    private Collection $createdConversations;
 
+    * @var Collection<int, Group>
+    */
+   #[ORM\OneToMany(targetEntity: Group::class, mappedBy: 'owner')]
+   private Collection $privateGroups;
+
+   /**
+    * @var Collection<int, Group>
+    */
+   #[ORM\ManyToMany(targetEntity: Group::class, mappedBy: 'teammate')]
+   private Collection $memberGroupPrivate;
+
 
 
     public function __construct()
@@ -135,6 +145,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->conversations = new ArrayCollection();
         $this->sentMessages = new ArrayCollection();
         $this->createdConversations = new ArrayCollection();
+        $this->privateGroups = new ArrayCollection();
+        $this->memberGroupPrivate = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -389,6 +401,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
        if (!$this->conversations->contains($conversation)) {
            $this->conversations->add($conversation);
            $conversation->addParticipant($this);
+
+    * @return Collection<int, Group>
+    */
+   public function getPrivateGroups(): Collection
+   {
+       return $this->privateGroups;
+   }
+
+   public function addPrivateGroup(Group $privateGroup): static
+   {
+       if (!$this->privateGroups->contains($privateGroup)) {
+           $this->privateGroups->add($privateGroup);
+           $privateGroup->setOwner($this);
        }
 
        return $this;
@@ -427,6 +452,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
            // set the owning side to null (unless already changed)
            if ($sentMessage->getSender() === $this) {
                $sentMessage->setSender(null);
+
+   public function removePrivateGroup(Group $privateGroup): static
+   {
+       if ($this->privateGroups->removeElement($privateGroup)) {
+           // set the owning side to null (unless already changed)
+           if ($privateGroup->getOwner() === $this) {
+               $privateGroup->setOwner(null);
            }
        }
 
@@ -446,6 +478,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
        if (!$this->createdConversations->contains($createdConversation)) {
            $this->createdConversations->add($createdConversation);
            $createdConversation->setCreator($this);
+    * @return Collection<int, Group>
+    */
+   public function getMemberGroupPrivate(): Collection
+   {
+       return $this->memberGroupPrivate;
+   }
+
+   public function addMemberGroupPrivate(Group $memberGroupPrivate): static
+   {
+       if (!$this->memberGroupPrivate->contains($memberGroupPrivate)) {
+           $this->memberGroupPrivate->add($memberGroupPrivate);
+           $memberGroupPrivate->addTeammate($this);
        }
 
        return $this;
@@ -458,6 +502,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
            if ($createdConversation->getCreator() === $this) {
                $createdConversation->setCreator(null);
            }
+
+   public function removeMemberGroupPrivate(Group $memberGroupPrivate): static
+   {
+       if ($this->memberGroupPrivate->removeElement($memberGroupPrivate)) {
+           $memberGroupPrivate->removeTeammate($this);
        }
 
        return $this;

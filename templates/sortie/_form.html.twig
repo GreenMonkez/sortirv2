@@ -6,9 +6,10 @@
 <div class="d-flex gap-2">
     <button class="btn btn-success">{{ button_label|default('Save') }}</button>
     <a class="btn btn-primary" href="{{ path('app_sortie_index') }}">Back to list</a>
-
-    {% if (app.user is same as sortie.planner and sortie.status.id != 6) or is_granted('ROLE_ADMIN') and sortie.status.id != 6 %}
-        <a href="#" id="btn-delete" class="btn btn-danger">Delete</a>
+  {% if sortie.status is not null and sortie.status.name is not empty and sortie.status.name != 'Annulée' %}
+        {% if app.user is same as sortie.planner or is_granted('ROLE_ADMIN') %}
+            <a href="#" id="btn-delete" class="btn btn-danger">Delete</a>
+        {% endif %}
     {% endif %}
 </div>
 {{ form_end(form) }}

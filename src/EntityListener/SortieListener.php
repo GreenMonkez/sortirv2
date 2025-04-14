@@ -33,16 +33,16 @@ class SortieListener
 
 
         if ($sortieDate < $now && $finished >= $now) {
-            $etat = $this->em->getRepository(Etat::class)->find(1);// En cours
+            $etat = $this->em->getRepository(Etat::class)->findOneBy(['name' => 'En cours']); // En cours
             $sortie->setStatus($etat);
         } elseif ($finished < $now) {
-            $etat = $this->em->getRepository(Etat::class)->find(5);// Terminée
+            $etat = $this->em->getRepository(Etat::class)->findOneBy(['name' => 'Terminée']);// Terminée
             $sortie->setStatus($etat);
         }elseif ($limitInscriptionDate < $now && $sortieDate > $now) {
-            $etat = $this->em->getRepository(Etat::class)->find(4);// Cloturée)
+            $etat = $this->em->getRepository(Etat::class)->findOneBy(['name' => 'Cloturée']);// Cloturée)
             $sortie->setStatus($etat);
         } elseif ($limitInscriptionDate > $now && $inscriptionStart < $now) {
-            $etat = $this->em->getRepository(Etat::class)->find(3);// Ouverte
+            $etat = $this->em->getRepository(Etat::class)->findOneBy(['name' => 'Ouverte']);// Ouverte
             $sortie->setStatus($etat);
 
         }}
