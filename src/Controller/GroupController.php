@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Conversation;
 use App\Entity\Group;
 use App\Form\GroupType;
 use App\Repository\GroupRepository;
@@ -71,7 +72,7 @@ public function filter(Request $request, GroupRepository $groupRepository, SiteR
     #[Route('/new', name: 'app_group_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
-        // INSTANCIER UNE CONVERSATION LORS DE LA CREATION DU GROUPE
+
         $group = new Group();
         $form = $this->createForm(GroupType::class, $group);
         $form->handleRequest($request);
@@ -82,8 +83,13 @@ public function filter(Request $request, GroupRepository $groupRepository, SiteR
             foreach ($form->get('teammate')->getData() as $teammate) {
                 $group->addTeammate($teammate);
             }
-                $entityManager->persist($group);
-                $entityManager->flush();
+            // INSTANCIER UNE CONVERSATION LORS DE LA CREATION DU GROUPE
+            $conversation = new Conversation();
+            $conversation->setPrivateGroup($group);
+            $conversation->setName($group->getName());
+            $group->setConversation($conversation);
+            $entityManager->persist($group);
+            $entityManager->flush();
 
                 $this->addFlash('success', 'Groupe créé avec succès !');
 

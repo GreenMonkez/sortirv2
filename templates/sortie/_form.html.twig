@@ -1,35 +1,64 @@
+{{ form_start(form, {'attr': {'class': 'row g-3'}}) }}
 
-{{ form_start(form) }}
+    <div class="row g-3">
+        <div class="col-md-6">
+            {{ form_row(form.nom, {'label': 'Nom de la sortie', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.lieu.name, {'label': 'Nom du Lieux', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.startAt, {'label': 'Date de la sortie', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.registerStartAt, {'label': 'Date de début d\'inscription', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.limitSortieAt, {'label': 'Date de fin d\'inscription', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.duration, {'label': 'Durée de la sortie', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.limitMembers, {'label': 'Nombre de places', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-6">
+            {{ form_row(form.site, {'label': 'Site', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-12">
+            {{ form_row(form.description, {'label': 'Description', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.lieu.region, {'label': 'Région', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.lieu.departement, {'label': 'Département', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.lieu.city, {'label': 'Ville', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.lieu.postaleCode, {'label': 'Code postal', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.lieu.street, {'label': 'Rue', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.lieu.latitude, {'label': 'Latitude', 'attr': {'class': 'form-control'}}) }}
+        </div>
+        <div class="col-md-4">
+            {{ form_row(form.lieu.longitude, {'label': 'Longitude', 'attr': {'class': 'form-control'}}) }}
+        </div>
+    </div>
 
-
-<div class="d-flex gap-2">
-    {{ form_row(form.nom, {'label': 'Nom de la sortie'}) }}
-    {{ form_row(form.lieu.name, {'label': 'Nom du Lieux'}) }}
-    {{ form_row(form.startAt, {'label': 'Date de la sortie'}) }}
-    {{ form_row(form.registerStartAt, {'label': 'Date de début d\'inscription'}) }}
-    {{ form_row(form.limitSortieAt, {'label': 'Date de fin d\'inscription'}) }}
-    {{ form_row(form.duration, {'label': 'Durée de la sortie'}) }}
-    {{ form_row(form.limitMembers, {'label': 'Nombre de places'}) }}
-    {{ form_row(form.site, {'label': 'Site'}) }}
-    {{ form_row(form.description, {'label': 'Description'}) }}
-    {{ form_row(form.lieu.region, {'label': 'Région'}) }}
-    {{ form_row(form.lieu.departement, {'label': 'Département',}) }}
-
-    {{ form_row(form.lieu.city, {'label': 'Ville' }) }}
-    {{ form_row(form.lieu.postaleCode, {'label': 'Code postal'}) }}
-    {{ form_row(form.lieu.street, {'label': 'Rue'}) }}
-    {{ form_row(form.lieu.latitude, {'label': 'Latitude'}) }}
-    {{ form_row(form.lieu.longitude, {'label': 'Longitude'}) }}
-
-
-    <button class="btn btn-success">{{ button_label|default('Save') }}</button>
-    <a class="btn btn-primary" href="{{ path('app_sortie_index') }}">Back to list</a>
-  {% if sortie.status is not null and sortie.status.name is not empty and sortie.status.name != 'Annulée' %}
-        {% if app.user is same as sortie.planner or is_granted('ROLE_ADMIN') %}
-            <a href="#" id="btn-delete" class="btn btn-danger">Delete</a>
+    <div class="d-flex justify-content-between mt-4">
+        <button class="btn btn-success">{{ button_label|default('Save') }}</button>
+        <a class="btn btn-primary" href="{{ path('app_sortie_index') }}">Back to list</a>
+        {% if sortie.status is not null and sortie.status.name is not empty and sortie.status.name != 'Annulée' %}
+            {% if app.user is same as sortie.planner or is_granted('ROLE_ADMIN') %}
+                <a href="#" id="btn-delete" class="btn btn-danger">Delete</a>
+            {% endif %}
         {% endif %}
-    {% endif %}
-</div>
+    </div>
 
-
-{{ form_end(form) }}
+    {{ form_end(form) }}

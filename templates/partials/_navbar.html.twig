@@ -17,8 +17,6 @@
 							</a>
 							<ul class="dropdown-menu" aria-labelledby="adminDropdown">
 								<li><a class="dropdown-item" href="{{ path('app_user_index') }}">Utilisateurs</a></li>
-								<li><a class="dropdown-item" href="#">Villes</a></li>
-								<li><a class="dropdown-item" href="#">Sites</a></li>
 							</ul>
 						</li>
 					{% endif %}
@@ -29,7 +27,7 @@
 						<a class="nav-link" href="{{ path('app_user_edit', { id: app.user.id }) }}">Mon profil</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" href="{{ path('app_group_index') }}">Groups</a>
+						<a class="nav-link" href="{{ path('app_group_index') }}">Groupes</a>
 					</li>
 					<li class="nav-item">
 						<a class="nav-link" href="{{ path('app_logout') }}">Se déconnecter</a>
