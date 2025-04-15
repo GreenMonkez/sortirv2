@@ -273,8 +273,6 @@ public function filter(Request $request, GroupRepository $groupRepository, SiteR
             $this->addFlash('success', 'Groupe supprimé avec succès !');
         }
 
-        $this->addFlash('danger', 'Erreur lors de la suppression du groupe !');
-
         return $this->redirectToRoute('app_group_index', [], Response::HTTP_SEE_OTHER);
     }
 }

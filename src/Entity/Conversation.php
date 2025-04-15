@@ -31,6 +31,7 @@ class Conversation
     private ?string $name = null;
 
     #[ORM\ManyToOne(targetEntity: Group::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(onDelete: "CASCADE")]
     private ?Group $privateGroup = null;
 
     public function __construct()

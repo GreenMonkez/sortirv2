@@ -53,9 +53,9 @@ class Group
     #[ORM\JoinColumn(nullable: false)]
     private ?Site $site = null;
 
-    #[ORM\OneToOne(targetEntity: Conversation::class, cascade: ['persist', 'remove'])]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Conversation $conversation = null;
+   #[ORM\OneToOne(targetEntity: Conversation::class, cascade: ['persist', 'remove'])]
+   #[ORM\JoinColumn(nullable: false, onDelete: "CASCADE")]
+   private ?Conversation $conversation = null;
 
     public function __construct()
     {

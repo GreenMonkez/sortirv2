@@ -36,17 +36,17 @@
          {% endif %}
      </div>
 
-        <div class="container mt-4">
-    <div class="message-form">
-        {{ form_start(form, {'attr': {'class': 'form-inline'}}) }}
-        <div class="form-group mb-2">
-            {{ form_row(form.content, {'attr': {'class': 'form-control', 'placeholder': 'Écrivez votre message...'}}) }}
+     <div class="container mt-4">
+        <div class="message-form">
+            {{ form_start(form, {'attr': {'class': 'form-inline'}}) }}
+            <div class="form-group mb-2">
+                {{ form_row(form.content, {'attr': {'class': 'form-control', 'placeholder': 'Écrivez votre message...'}}) }}
+            </div>
+            <button type="submit" class="btn btn-success ml-2 mb-2">Envoyer</button>
+            <a href="{{ path('app_group_show', {id : conversation.privateGroup.id }) }}" class="btn btn-primary mb-2">Retour aux Groupes</a>
+            {{ form_end(form) }}
         </div>
-        <button type="submit" class="btn btn-success ml-2 mb-2">Envoyer</button>
-        <a href="{{ path('app_group_show', {id : conversation.privateGroup.id }) }}" class="btn btn-primary mb-2">Retour aux Groupes</a>
-        {{ form_end(form) }}
     </div>
-</div>
      {% endblock %}
 
      {% block title %}{{ parent() }} - {{ conversation.name }}{% endblock %}

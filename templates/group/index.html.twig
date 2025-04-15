@@ -45,7 +45,7 @@
                         <td>
                             <div class="d-flex gap-2">
                                 <a class="btn btn-primary" href="{{ path('app_group_show', {'id': group.id}) }}">Show</a>
-                                {% if app.user and not group.teammate.contains(app.user) %}
+                                {% if app.user and not group.teammate.contains(app.user) and group.owner is not same as app.user %}
                                 <form method="post" action="{{ path('app_group_join', {'id': group.id}) }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token('join' ~ group.id) }}">
                                     <button class="btn btn-success">Join</button>
