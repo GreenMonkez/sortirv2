@@ -30,7 +30,7 @@ class Conversation
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\ManyToOne(inversedBy: 'conversations')]
+    #[ORM\ManyToOne(targetEntity: Group::class, cascade: ['persist'])]
     private ?Group $privateGroup = null;
 
     public function __construct()
