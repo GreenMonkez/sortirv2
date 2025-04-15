@@ -5,12 +5,19 @@
 {% block body %}
 
     <h1 class="text-center mb-4" style="color: #66563C">{{ group.name }}</h1>
+    <div>
+        <a href="{{ path('app_conversation_show', {'id' : group.conversation.id}) }}" style="background-color: #66563C ; color: white;" class="btn mb-2">Rejoindre la conversation de groupe</a>
 
+    </div>
     <table class="table table-bordered" style="background-color: #E0FFFF; color: #66563C; border-radius: 8px;">
         <tbody>
             <tr>
                 <th style="background-color: #B0E0E6; color: #66563C;">Nom du groupe : </th>
                 <td>{{ group.name }}</td>
+            </tr>
+            <tr>
+                <th style="background-color: #B0E0E6; color: #66563C;">Créateur : </th>
+                <td><a href="{{ path('app_user_show', {'id': group.owner.id}) }}" style="color: #66563C;">{{ group.owner.firstName }} {{ group.owner.lastName }}</a></td>
             </tr>
             <tr>
                 <th style="background-color: #B0E0E6; color: #66563C;">Date de création : </th>
@@ -24,7 +31,8 @@
                 <th style="background-color: #B0E0E6; color: #66563C;">Membres : </th>
              <td>
                  {% for membre in group.teammate %}
-                     {{ membre.firstName }} - {{ membre.lastName }}{% if not loop.last %}, {% endif %}
+                     <a href="{{ path('app_user_show', {'id': membre.id}) }}" style="color: #66563C;">{{ membre.firstName }} {{ membre.lastName }}</a>{% if not loop.last %}, {% endif %}
+
                  {% endfor %}
              </td>
             </tr>

@@ -16,17 +16,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/conversation')]
 final class ConversationController extends AbstractController
 {
-    // Show all conversations of the user
-    #[IsGranted('ROLE_USER')]
-    #[Route(name: 'app_conversation', methods: ['GET'])]
-    public function index(
-
-    ): Response
-    {
-        return $this->render('conversation/index.html.twig', [
-            'conversations' => $this->getUser()->getConversations(),
-        ]);
-    }
 
     // Show a specific conversation and its messages with the possibility to send a new message
     #[IsGranted('ROLE_USER')]

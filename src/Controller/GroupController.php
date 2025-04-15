@@ -10,6 +10,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -69,6 +71,7 @@ public function filter(Request $request, GroupRepository $groupRepository, SiteR
     #[Route('/new', name: 'app_group_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
+        // INSTANCIER UNE CONVERSATION LORS DE LA CREATION DU GROUPE
         $group = new Group();
         $form = $this->createForm(GroupType::class, $group);
         $form->handleRequest($request);
@@ -102,32 +105,61 @@ public function filter(Request $request, GroupRepository $groupRepository, SiteR
      * @return Response
      */
     #[Route('/{id}/join', name: 'app_group_join', methods: ['POST'])]
-    public function joinGroup(Request $request, Group $group, EntityManagerInterface $entityManager): Response
+    public function joinGroup(Request $request, Group $group, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
     {
         $user = $this->getUser();
+
+        // Vérifiez si l'utilisateur est connecté
+        if (!$user) {
+            $this->addFlash('danger', 'Vous devez être connecté pour rejoindre un groupe !');
+            return $this->redirectToRoute('app_group_index');
+        }
 
         if ($group->getOwner() === $user) {
             $this->addFlash('danger', 'Vous ne pouvez pas rejoindre votre propre groupe !');
             return $this->redirectToRoute('app_group_index');
         }
 
+        // Vérifiez si l'utilisateur est déjà inscrit
         if ($group->getTeammate()->contains($user)) {
             $this->addFlash('danger', 'Vous êtes déjà membre de ce groupe !');
             return $this->redirectToRoute('app_group_index');
         }
 
-        // Vérifiez le token CSRF et inscrivez l'utilisateur
-        if ($this->isCsrfTokenValid('join' . $group->getId(), $request->request->get('_token'))) {
-            $group->addTeammate($user);
-            $entityManager->flush();
-            $this->addFlash('success', 'Vous avez rejoint le groupe avec succès !');
-            return $this->redirectToRoute('app_group_index');
-        } else {
+        // Vérifiez le token CSRF
+        if (!$this->isCsrfTokenValid('join' . $group->getId(), $request->request->get('_token'))) {
             $this->addFlash('danger', 'Erreur lors de la validation du token CSRF.');
             return $this->redirectToRoute('app_group_index');
         }
+        // Ajoutez l'utilisateur au groupe
+        $group->addTeammate($user);
+        $entityManager->flush();
 
+        // Envoi de l'email
+        try {
+            $email = (new Email())
+                    ->from('noreply@votreapp.com')
+                    ->to($user->getEmail())
+                    ->subject('Vous avez rejoint un groupe !')
+                    ->text(sprintf(
+                        'Bonjour %s %s, vous avez rejoint le groupe "%s" créé par %s.',
+                        $user->getFirstName(),
+                        $user->getLastName(),
+                        $group->getName(),
+                        $group->getOwner()->getFirstName()
+                    ));
+
+            $mailer->send($email);
+            $this->addFlash('success', 'Vous avez rejoint le groupe avec succès !');
+
+            } catch (\Exception $e) {
+                $this->addFlash('danger', 'Vous avez rejoint le groupe, mais l\'email de confirmation n\'a pas pu être envoyé.');
+            }
+
+            return $this->redirectToRoute('app_group_index');
     }
+
+
 
     /**
      * Méthode pour quitter un groupe
@@ -235,7 +267,7 @@ public function filter(Request $request, GroupRepository $groupRepository, SiteR
             $this->addFlash('success', 'Groupe supprimé avec succès !');
         }
 
-        $this->addFlash('error', 'Erreur lors de la suppression du groupe !');
+        $this->addFlash('danger', 'Erreur lors de la suppression du groupe !');
 
         return $this->redirectToRoute('app_group_index', [], Response::HTTP_SEE_OTHER);
     }

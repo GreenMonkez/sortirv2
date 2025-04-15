@@ -30,9 +30,8 @@ class Conversation
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\ManyToOne(inversedBy: 'createdConversations')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?User $creator = null;
+    #[ORM\ManyToOne(inversedBy: 'conversations')]
+    private ?Group $privateGroup = null;
 
     public function __construct()
     {
@@ -111,14 +110,14 @@ class Conversation
         return $this;
     }
 
-    public function getCreator(): ?User
+    public function getPrivateGroup(): ?Group
     {
-        return $this->creator;
+        return $this->privateGroup;
     }
 
-    public function setCreator(?User $creator): static
+    public function setPrivateGroup(?Group $privateGroup): static
     {
-        $this->creator = $creator;
+        $this->privateGroup = $privateGroup;
 
         return $this;
     }

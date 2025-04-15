@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Conversation;
+use App\Entity\Group;
 use App\Entity\User;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\SecurityBundle\Security;

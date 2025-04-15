@@ -39,22 +39,23 @@ class Group
     private Collection $teammate;
 
     #[ORM\Column]
-//    #[Assert\NotBlank(message: 'La date de création ne peut pas être vide.')]
-//    #[Assert\DateTime(message: 'La date de création doit être au format valide.')]
     private ?\DateTimeImmutable $createdAt = null;
 
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $description = null;
 
-//    #[Assert\DateTime(message: 'La date de modification doit être au format valide.')]
-//    #[Assert\NotBlank(message: 'La date de modification ne peut pas être vide.')]
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $modifiedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'privateGroups')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Site $site = null;
+
+    #[ORM\OneToOne(targetEntity: Conversation::class, cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Conversation $conversation = null;
 
     public function __construct()
     {
@@ -163,4 +164,17 @@ class Group
 
         return $this;
     }
+
+    public function getConversation(): ?Conversation
+    {
+        return $this->conversation;
+    }
+
+    public function setConversation(Conversation $conversation): static
+    {
+        $this->conversation = $conversation;
+
+        return $this;
+    }
+
 }

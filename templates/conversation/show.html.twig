@@ -3,7 +3,7 @@
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
 {% block body %}
-    <h1 class="mb-4">{{ conversation.name|default('Conversation sans titre') }}</h1>
+    <h1 class="mb-4" style="color: #66563C">{{ conversation.name|default('Conversation sans titre') }}</h1>
 
     <div class="messages-list">
         {% if conversation.messages|length > 0 %}
@@ -23,8 +23,8 @@
         <div class="form-group mb-2">
             {{ form_row(form.content, {'attr': {'class': 'form-control', 'placeholder': 'Écrivez votre message...'}}) }}
         </div>
-        <button type="submit" class="btn btn-primary ml-2">Envoyer</button>
-        <a href="{{ path('app_conversation') }}" class="btn btn-secondary ">Retour à la liste</a>
+        <button type="submit" class="btn btn-success ml-2 mb-2">Envoyer</button>
+        <a href="{{ path('app_group_show', {id : conversation.privateGroup.id }) }}" class="btn btn-primary  mb-2">Retour aux Groupes</a>
         {{ form_end(form) }}
     </div>
 

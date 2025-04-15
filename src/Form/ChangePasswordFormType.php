@@ -32,9 +32,15 @@ class ChangePasswordFormType extends AbstractType
                         new Length(array('min' => 6)),
                     ],
                     'label' => 'Nouveau mot de passe :',
+                    'attr' => [
+                        'class' => 'form-control',
+                    ],
                 ],
                 'second_options' => [
                     'label' => 'Répétez le mot de passe :',
+                    'attr' => [
+                        'class' => 'form-control',
+                    ],
                 ],
                 'invalid_message' => 'Les champs de mot de passe doivent correspondre.',
                 // Instead of being set onto the object directly,
