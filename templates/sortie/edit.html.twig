@@ -4,13 +4,20 @@
 {% block title %}Edit Sortie{% endblock %}
 
 {% block body %}
-<h1 style="color: #66563C" >Edit Sortie</h1>
-<section class="container my-4" style="background-color: #AEEBE7; padding: 20px; border-radius: 8px;">
+    <h1 style="color: #66563C" >Edit Sortie</h1>
+    <section class="container my-4" style="background-color: #AEEBE7; padding: 20px; border-radius: 8px;">
 
-    <div>
-        {{ include('sortie/_form.html.twig', {'button_label': 'Update'}) }}
+    <div data-controller="geo-api"
+     data-sortie-id="{{ sortie.id }}"
+     data-region-code="{{ region_code|default('') }}"
+     data-departement-code="{{ departement_code|default('') }}"
+     data-city-name="{{ city_name|default('') }}">
+    {{ include('sortie/_form.html.twig', {'button_label': 'Update'}) }}
         <br>
-    </div>
+</div>
+    <a href="{{ path('app_sortie_index') }}">back to list</a>
+
+
 
 
 

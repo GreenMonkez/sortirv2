@@ -2,8 +2,10 @@
 
 namespace App\Form;
 
+use App\Entity\Site;
 use App\Entity\Sortie;
 use App\Repository\SiteRepository;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -48,22 +50,13 @@ class SortieType extends AbstractType
                 'required' => false,
                 'label' => 'Description',
             ])
-            ->add('lieu', LieuType::class, [
-
-            ])
-            ->add('site', ChoiceType::class, [
+            ->add('lieu', LieuType::class, $options['lieu'])
+            ->add('site', EntityType::class, [
                 'label' => 'Site',
+                'class' => Site::class,
+                'choice_label' => 'name',
                 'placeholder' => 'Choisissez un site',
-                'choices' => [
-                    'Nantes' => $this->siteRepository->findOneBy(['name' => 'Nantes']),
-                    'Rennes' => $this->siteRepository->findOneBy(['name' => 'Rennes']),
-                    'Niort' => $this->siteRepository->findOneBy(['name' => 'Niort']),
-                    'Quimper' => $this->siteRepository->findOneBy(['name' => 'Quimper']),
-                ],
-
-
             ])
-
         ;
     }
 
@@ -71,6 +64,7 @@ class SortieType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Sortie::class,
+            'lieu' => [],
         ]);
     }
 }

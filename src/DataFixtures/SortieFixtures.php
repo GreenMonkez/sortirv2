@@ -39,7 +39,6 @@ class SortieFixtures extends Fixture implements DependentFixtureInterface
             }
             $sortie->setPlanner($this->getReference('user-' . mt_rand(0, 9 ), User::class));
 
-
             $manager->persist($sortie);
 
             // Ajout des notifications pour les membres

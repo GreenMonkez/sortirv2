@@ -1,9 +1,27 @@
 
-
 {{ form_start(form) }}
-    {{ form_widget(form) }}
+
 
 <div class="d-flex gap-2">
+    {{ form_row(form.nom, {'label': 'Nom de la sortie'}) }}
+    {{ form_row(form.lieu.name, {'label': 'Nom du Lieux'}) }}
+    {{ form_row(form.startAt, {'label': 'Date de la sortie'}) }}
+    {{ form_row(form.registerStartAt, {'label': 'Date de début d\'inscription'}) }}
+    {{ form_row(form.limitSortieAt, {'label': 'Date de fin d\'inscription'}) }}
+    {{ form_row(form.duration, {'label': 'Durée de la sortie'}) }}
+    {{ form_row(form.limitMembers, {'label': 'Nombre de places'}) }}
+    {{ form_row(form.site, {'label': 'Site'}) }}
+    {{ form_row(form.description, {'label': 'Description'}) }}
+    {{ form_row(form.lieu.region, {'label': 'Région'}) }}
+    {{ form_row(form.lieu.departement, {'label': 'Département',}) }}
+
+    {{ form_row(form.lieu.city, {'label': 'Ville' }) }}
+    {{ form_row(form.lieu.postaleCode, {'label': 'Code postal'}) }}
+    {{ form_row(form.lieu.street, {'label': 'Rue'}) }}
+    {{ form_row(form.lieu.latitude, {'label': 'Latitude'}) }}
+    {{ form_row(form.lieu.longitude, {'label': 'Longitude'}) }}
+
+
     <button class="btn btn-success">{{ button_label|default('Save') }}</button>
     <a class="btn btn-primary" href="{{ path('app_sortie_index') }}">Back to list</a>
   {% if sortie.status is not null and sortie.status.name is not empty and sortie.status.name != 'Annulée' %}
@@ -12,4 +30,6 @@
         {% endif %}
     {% endif %}
 </div>
+
+
 {{ form_end(form) }}
