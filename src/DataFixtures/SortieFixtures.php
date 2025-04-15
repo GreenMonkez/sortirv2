@@ -32,7 +32,7 @@ class SortieFixtures extends Fixture implements DependentFixtureInterface
             // Relations
             $sortie->setSite($this->getReference('site-' . mt_rand(1, 4), Site::class));
             $sortie->setLieu($this->getReference('lieu-' . mt_rand(1, 10), Lieu::class));
-            $sortie->setStatus($this->getReference('etat-' . mt_rand(1, 6), Etat::class));
+            $sortie->setStatus($this->getReference('etat-' . $faker->randomElement([2,6]), Etat::class));
             $sortie->setPlanner($this->getReference('user-' . mt_rand(0, 9), User::class));
 
             $manager->persist($sortie);

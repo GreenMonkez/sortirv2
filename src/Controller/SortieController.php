@@ -9,12 +9,11 @@ use App\Repository\EtatRepository;
 use App\Repository\SiteRepository;
 use App\Repository\SortieRepository;
 use App\Repository\UserRepository;
+use App\Service\GeoApiService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -95,31 +94,57 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
      * @param UserRepository $userRepository
      * @return Response
      */
-    #[Route('/new', name: 'app_sortie_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, SiteRepository $repository, UserRepository $userRepository): Response
-    {
+  #[Route('/new', name: 'app_sortie_new', methods: ['GET', 'POST'])]
+  public function new(Request $request, GeoApiService $geoApiService): Response
+  {
+      $sortie = new Sortie();
+      $form = $this->createForm(SortieType::class, $sortie);
+      $form->handleRequest($request);
 
-        $sortie = new Sortie();
-        $form = $this->createForm(SortieType::class, $sortie);
-        $form->handleRequest($request);
+      if ($form->isSubmitted()) {
+
+          // Récupérer les données des champs non mappés
+          $region = $sortie->getLieu()->getRegion();
+          $departement = $request->get('sortie')['lieu']['departement'];
+          $ville = $request->get('sortie')['lieu']['city'];
+
+          // Récupérer les données via GeoApiService
+//          $region = $geoApiService->getRegions()[$regionCode] ?? null;
+//          $departement = $geoApiService->getDepartementsByRegion($regionCode)[$departementCode] ?? null;
+//          $ville = $geoApiService->getVillesByDepartement($departementCode)[$villeCode] ?? null;
+
+          // Si un lieu est défini, utiliser ses données
 
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $sortie->setDuration($sortie->getDuration() * 60);
-                $sortie->setStatus($this->etatRepository->find(2));
-                $sortie->setPlanner($this->getUser());
-            $this->entityManager->persist($sortie);
+          // Ajouter les données récupérées au modèle
+          $sortie->getLieu()?->setRegion($region);
+          $sortie->getLieu()?->setDepartement($departement);
+          $sortie->getLieu()?->setCity($ville);
 
-            $this->entityManager->flush();
-            $this->addFlash('success', 'Sortie créée avec succès !');
-            return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
-        }
+          // Vérifier si le formulaire est valide
+          //if ($form->isValid()) {
+              // Conserver les données existantes
+              $sortie->setDuration($sortie->getDuration() * 60);
+              $sortie->setStatus($this->etatRepository->find(2));
+              $sortie->setPlanner($this->getUser());
 
-        return $this->render('sortie/new.html.twig', [
-            'sortie' => $sortie,
-            'form' => $form,
-        ]);
-    }
+              // Sauvegarder la sortie
+              $this->entityManager->persist($sortie);
+              $this->entityManager->flush();
+
+              $this->addFlash('success', 'Sortie créée avec succès !');
+              return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+          //}
+      }
+
+      return $this->render('sortie/new.html.twig', [
+          'sortie' => $sortie,
+          'form' => $form,
+      ]);
+  }
+
+
+
     /**
      * Méthode permettant d'afficher une sortie par son id
      * @param Sortie $sortie
@@ -140,7 +165,7 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
     }
 
    #[Route('/{id}/inscription', name: 'app_sortie_sub')]
-    public function inscription(Request $request, Sortie $sortie, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    public function inscription(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
     {
         $user = $this->getUser();
 
@@ -172,32 +197,14 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
         if ($this->isCsrfTokenValid('inscription' . $sortie->getId(), $request->getPayload()->getString('_token'))) {
             $sortie->addMember($user);
             $entityManager->flush();
-            // Envoi de l'email
-            $email = (new Email())
-                ->from('noreply@votreapp.com')
-                ->to($user->getEmail())
-                ->subject('Confirmation d\'inscription à la sortie')
-                ->text(sprintf(
-                    'Bonjour %s %s, vous êtes inscrit à la sortie "%s" prévue le %s.',
-                    $user->getFirstName(),
-                    $user->getLastName(),
-                    $sortie->getNom(),
-                    $sortie->getStartAt()->format('d/m/Y H:i')
-                ));
-
-            $mailer->send($email);
-
-            $this->addFlash('success', 'Inscription réussie ! Un email de confirmation vous a été envoyé.');
-        }
-        else {
-            $this->addFlash('error', 'Token CSRF invalide.');
+            $this->addFlash('success', 'Inscription réussie !');
         }
 
         return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
     }
 
 #[Route('/{id}/desinscription', name: 'app_sortie_unSub')]
-public function desinscription(Request $request, Sortie $sortie, EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+public function desinscription(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
 {
     $user = $this->getUser();
 
@@ -224,23 +231,8 @@ public function desinscription(Request $request, Sortie $sortie, EntityManagerIn
         $sortie->removeMember($user);
         $entityManager->persist($sortie); // Persist pour s'assurer que les changements sont suivis
         $entityManager->flush();
-        $email = (new Email())
-            ->from('noreply@votreapp.com')
-            ->to($user->getEmail())
-            ->subject('Confirmation de désinscription à la sortie')
-            ->text(sprintf(
-                'Bonjour %s %s, vous êtes désinscrit de la sortie "%s" prévue le %s.',
-                $user->getFirstName(),
-                $user->getLastName(),
-                $sortie->getNom(),
-                $sortie->getStartAt()->format('d/m/Y H:i')
-            ));
-
-        $mailer->send($email);
-
-        $this->addFlash('success', 'Désinscription réussie ! Un email de confirmation vous a été envoyé.');
-    }
-    else {
+        $this->addFlash('success', 'Désinscription réussie !');
+    } else {
         $this->addFlash('error', 'Token CSRF invalide.');
     }
 
@@ -255,24 +247,40 @@ public function desinscription(Request $request, Sortie $sortie, EntityManagerIn
      * @return Response
      */
     #[Route('/{id}/edit', name: 'app_sortie_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
+public function edit(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(SortieType::class, $sortie);
+        // Vérifiez si l'utilisateur est le planificateur de la sortie
+        $form = $this->createForm(SortieType::class, $sortie, [
+            'lieu' => [
+                'region' => $request->get('sortie')['lieu']['region'] ?? [],
+                'departement' => $request->get('sortie')['lieu']['departement'] ?? [],
+            ]
+        ]);
+        //dd($request);
         $form->handleRequest($request);
+        //$sortie->getLieu()->setDepartement($request->get('sortie')['lieu']['departement']);
+        //$sortie->getLieu()->setCity($request->get('sortie')['lieu']['city']);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
             $entityManager->flush();
+
             $this->addFlash('success', 'Sortie modifiée avec succès !');
-            return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_sortie_index');
         }
 
+        $regionCode = $sortie->getLieu()?->getRegion();
+        $departementCode = $sortie->getLieu()?->getDepartement();
+        $cityName = $sortie->getLieu()?->getCity();
+
         return $this->render('sortie/edit.html.twig', [
-            'sortie' => $sortie,
             'form' => $form,
+            'sortie' => $sortie,
+            'region_code' => $regionCode,
+            'departement_code' => $departementCode,
+            'city_name' => $cityName
         ]);
     }
-
     /**
      * Méthode permettant d'annuler une sortie
      * @param Request $request

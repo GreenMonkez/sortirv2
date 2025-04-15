@@ -4,9 +4,13 @@
 
 {% block body %}
     <h1>Edit Sortie</h1>
-
+<div data-controller="geo-api"
+     data-sortie-id="{{ sortie.id }}"
+     data-region-code="{{ region_code|default('') }}"
+     data-departement-code="{{ departement_code|default('') }}"
+     data-city-name="{{ city_name|default('') }}">
     {{ include('sortie/_form.html.twig', {'button_label': 'Update'}) }}
-
+</div>
     <a href="{{ path('app_sortie_index') }}">back to list</a>
 
     {{ include('sortie/_delete_form.html.twig') }}

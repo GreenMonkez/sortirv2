@@ -33,6 +33,7 @@ class SortieListener
 
 
         if ($sortieDate < $now && $finished >= $now) {
+            dd($sortieDate, $now, $finished);
             $etat = $this->em->getRepository(Etat::class)->find(1);// En cours
             $sortie->setStatus($etat);
         } elseif ($finished < $now) {
