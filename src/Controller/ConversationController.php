@@ -50,9 +50,28 @@ final class ConversationController extends AbstractController
             return $this->redirectToRoute('app_conversation_show', ['id' => $conversation->getId()]);
         }
 
+
+        // Regrouper les réactions par emoji
+        $messagesWithReactions = [];
+        foreach ($conversation->getMessages() as $message) {
+            $reactionsGrouped = [];
+            foreach ($message->getReactions() as $reaction) {
+                $emoji = $reaction['emoji'];
+                if (!isset($reactionsGrouped[$emoji])) {
+                    $reactionsGrouped[$emoji] = 0;
+                }
+                $reactionsGrouped[$emoji]++;
+            }
+            $messagesWithReactions[] = [
+                'message' => $message,
+                'reactions' => $reactionsGrouped,
+            ];
+        }
+
         return $this->render('conversation/show.html.twig', [
             'conversation' => $conversation,
             'form' => $form,
+            'messagesWithReactions' => $messagesWithReactions,
         ]);
     }
 
@@ -72,7 +91,6 @@ final class ConversationController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $conversation->setCreator($this->getUser());
             $conversation->addParticipant($this->getUser());
             $entityManager->persist($conversation);
             $entityManager->flush();
@@ -85,5 +103,34 @@ final class ConversationController extends AbstractController
             'conversation' => $conversation,
             'form' => $form,
         ]);
+    }
+
+   #[Route('/message/{id}/react', name: 'message_react', methods: ['POST'])]
+    public function react(Message $message, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $emoji = $request->request->get('emoji');
+        $user = $this->getUser();
+
+        // Vérifie si l'emoji est valide
+        $validEmojis = ['👍', '❤️', '😂'];
+        if ($emoji && in_array($emoji, $validEmojis, true)) {
+            // Vérifie si l'utilisateur a déjà réagi avec cet emoji
+            $existingReaction = array_filter($message->getReactions(), function ($reaction) use ($emoji, $user) {
+                return $reaction['emoji'] === $emoji && $reaction['user'] === $user->getId();
+            });
+
+            if ($existingReaction) {
+                // Si une réaction existe, on l'annule
+                $message->removeReaction($emoji, $user);
+            } else {
+                // Sinon, on ajoute la réaction
+                $message->addReaction($emoji, $user);
+            }
+
+            $entityManager->persist($message);
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_conversation_show', ['id' => $message->getConversation()->getId()]);
     }
 }

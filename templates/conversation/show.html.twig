@@ -1,36 +1,52 @@
 {% extends 'base.html.twig' %}
 
-{% form_theme form 'bootstrap_5_layout.html.twig' %}
+     {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
-{% block body %}
-    <h1 class="mb-4" style="color: #66563C">{{ conversation.name|default('Conversation sans titre') }}</h1>
+     {% block body %}
+         <h1 class="mb-4" style="color: #66563C">{{ conversation.name|default('Conversation sans titre') }}</h1>
 
-    <div class="messages-list">
-        {% if conversation.messages|length > 0 %}
-            {% for message in conversation.messages %}
-                <div class="message mb-3 p-3 border rounded">
-                    <strong class="text-primary">{{ message.sender.pseudo|default('Anonyme') }}</strong> :
-                    <span>{{ message.content|default('Message vide') }}</span>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p class="text-muted">Aucun message pour le moment.</p>
-        {% endif %}
-    </div>
+     <div class="messages-list">
+         {% if conversation.messages|length > 0 %}
+                 {% for messageData in messagesWithReactions %}
+                     <div class="message mb-3 p-3 border rounded shadow-sm">
+                         <div class="d-flex justify-content-between align-items-center">
+                             <strong class="text-primary">{{ messageData.message.sender.firstName|default('Anonyme') }}</strong>
+                             <small class="text-muted">{{ messageData.message.sentAt|date('d/m/Y H:i') }}</small>
+                         </div>
+                         <p class="mt-2 mb-1">{{ messageData.message.content|default('Message vide') }}</p>
 
-    <div class="message-form mt-4">
+                         <div class="reactions mt-2">
+                             {% for emoji, count in messageData.reactions %}
+                                 <span class="badge bg-light text-dark me-1">
+                                     {{ emoji }} {{ count }}
+                                 </span>
+                             {% endfor %}
+                         </div>
+
+                         <form action="{{ path('message_react', {id: messageData.message.id}) }}" method="post" class="mt-2 d-flex gap-2">
+                             <button type="submit" name="emoji" value="👍" class="btn btn-sm btn-outline-primary">👍</button>
+                             <button type="submit" name="emoji" value="❤️" class="btn btn-sm btn-outline-danger">❤️</button>
+                             <button type="submit" name="emoji" value="😂" class="btn btn-sm btn-outline-warning">😂</button>
+                         </form>
+                     </div>
+                 {% endfor %}
+             </div>
+         {% else %}
+             <p class="text-muted">Aucun message pour le moment.</p>
+         {% endif %}
+     </div>
+
+        <div class="container mt-4">
+    <div class="message-form">
         {{ form_start(form, {'attr': {'class': 'form-inline'}}) }}
         <div class="form-group mb-2">
             {{ form_row(form.content, {'attr': {'class': 'form-control', 'placeholder': 'Écrivez votre message...'}}) }}
         </div>
         <button type="submit" class="btn btn-success ml-2 mb-2">Envoyer</button>
-        <a href="{{ path('app_group_show', {id : conversation.privateGroup.id }) }}" class="btn btn-primary  mb-2">Retour aux Groupes</a>
+        <a href="{{ path('app_group_show', {id : conversation.privateGroup.id }) }}" class="btn btn-primary mb-2">Retour aux Groupes</a>
         {{ form_end(form) }}
     </div>
+</div>
+     {% endblock %}
 
-{% endblock %}
-
-{% block title %}{{ parent() }} - {{ conversation.name }}
-
-{% endblock %}
-
+     {% block title %}{{ parent() }} - {{ conversation.name }}{% endblock %}

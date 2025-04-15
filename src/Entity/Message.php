@@ -29,6 +29,9 @@ class Message
     #[ORM\Column]
     private ?\DateTimeImmutable $sentAt = null;
 
+    #[ORM\Column(type: 'json')]
+    private array $reactions = [];
+
     public function getId(): ?int
     {
         return $this->id;
@@ -80,6 +83,29 @@ class Message
     {
         $this->sentAt = new \DateTimeImmutable();
 
+        return $this;
+    }
+
+
+    /**
+     * @return array
+     */
+    public function getReactions(): array
+    {
+        return $this->reactions;
+    }
+
+    public function addReaction(string $emoji, User $user): static
+    {
+        $this->reactions[] = ['emoji' => $emoji, 'user' => $user->getId()];
+        return $this;
+    }
+
+    public function removeReaction(string $emoji, User $user): static
+    {
+        $this->reactions = array_filter($this->reactions, function ($reaction) use ($emoji, $user) {
+            return !($reaction['emoji'] === $emoji && $reaction['user'] === $user->getId());
+        });
         return $this;
     }
 }
