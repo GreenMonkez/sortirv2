@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-
 use App\Entity\Sortie;
 use App\EntityListener\SortieArchiver;
 use App\Form\SortieType;
@@ -11,6 +10,7 @@ use App\Repository\MotifAnnulationRepository;
 use App\Repository\SiteRepository;
 use App\Repository\SortieRepository;
 use App\Repository\UserRepository;
+use App\Service\GeoApiService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -81,12 +81,11 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
         $sorties = $sortieRepository->findAll();
     }
 
-        return $this->render('sortie/index.html.twig', [
-            'sorties' => $sorties,
-            'sites' => $siteRepository->findAll()
-
-        ]);
-    }
+    return $this->render('sortie/index.html.twig', [
+        'sorties' => $sorties,
+        'sites' => $siteRepository->findAll(),
+    ]);
+}
 
 
 
@@ -97,27 +96,48 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
      * @param UserRepository $userRepository
      * @return Response
      */
-    #[Route('/new', name: 'app_sortie_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, SiteRepository $repository, UserRepository $userRepository): Response
-    {
+  #[Route('/new', name: 'app_sortie_new', methods: ['GET', 'POST'])]
+  public function new(Request $request, GeoApiService $geoApiService): Response
+  {
+      $sortie = new Sortie();
+      $form = $this->createForm(SortieType::class, $sortie);
+      $form->handleRequest($request);
 
-        $sortie = new Sortie();
-        $form = $this->createForm(SortieType::class, $sortie);
-        $form->handleRequest($request);
+      if ($form->isSubmitted()) {
+
+          // Récupérer les données des champs non mappés
+          $region = $sortie->getLieu()->getRegion();
+          $departement = $request->get('sortie')['lieu']['departement'];
+          $ville = $request->get('sortie')['lieu']['city'];
+
+          // Récupérer les données via GeoApiService
+//          $region = $geoApiService->getRegions()[$regionCode] ?? null;
+//          $departement = $geoApiService->getDepartementsByRegion($regionCode)[$departementCode] ?? null;
+//          $ville = $geoApiService->getVillesByDepartement($departementCode)[$villeCode] ?? null;
+
+          // Si un lieu est défini, utiliser ses données
 
 
-            if ($form->isSubmitted() && $form->isValid()) {
-                $sortie->setDuration($sortie->getDuration() * 60);
-                $recupEtat = $this->etatRepository->findOneBy(['name' => 'Prochainement']);
-                $sortie->setStatus($recupEtat);
-                $sortie->setPlanner($this->getUser());
-                //dd($sortie);
-            $this->entityManager->persist($sortie);
+          // Ajouter les données récupérées au modèle
+          $sortie->getLieu()?->setRegion($region);
+          $sortie->getLieu()?->setDepartement($departement);
+          $sortie->getLieu()?->setCity($ville);
 
-            $this->entityManager->flush();
-            $this->addFlash('success', 'Sortie créée avec succès !');
-            return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
-        }
+          // Vérifier si le formulaire est valide
+          //if ($form->isValid()) {
+              // Conserver les données existantes
+              $sortie->setDuration($sortie->getDuration() * 60);
+              $sortie->setStatus($this->etatRepository->find(2));
+              $sortie->setPlanner($this->getUser());
+
+              // Sauvegarder la sortie
+              $this->entityManager->persist($sortie);
+              $this->entityManager->flush();
+
+              $this->addFlash('success', 'Sortie créée avec succès !');
+              return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+          //}
+      }
 
         return $this->render('sortie/new.html.twig', [
             'sortie' => $sortie,
@@ -262,26 +282,39 @@ public function desinscription(Request $request, Sortie $sortie, EntityManagerIn
     #[Route('/{id}/edit', name: 'app_sortie_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Sortie $sortie, EntityManagerInterface $entityManager): Response
     {
-
-        $form = $this->createForm(SortieType::class, $sortie);
+        // Vérifiez si l'utilisateur est le planificateur de la sortie
+        $form = $this->createForm(SortieType::class, $sortie, [
+            'lieu' => [
+                'region' => $request->get('sortie')['lieu']['region'] ?? [],
+                'departement' => $request->get('sortie')['lieu']['departement'] ?? [],
+            ]
+        ]);
+        //dd($request);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
 
             $entityManager->flush();
             $this->addFlash('success', 'Sortie modifiée avec succès !');
-            return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_sortie_index');
         }
+
+        $regionCode = $sortie->getLieu()?->getRegion();
+        $departementCode = $sortie->getLieu()?->getDepartement();
+        $cityName = $sortie->getLieu()?->getCity();
 
         return $this->render('sortie/edit.html.twig', [
             'sortie' => $sortie,
             'form' => $form,
             'motifs' => $this->motifAnnulationRepository->findAll(),
+            'region_code' => $regionCode,
+            'departement_code' => $departementCode,
+            'city_name' => $cityName
         ]);
     }
 
     /**
-     * Méthode permettant de supprimer une sortie
+     * Méthode permettant d'annuler une sortie
      * @param Request $request
      * @param Sortie $sortie
      * @param EntityManagerInterface $entityManager
