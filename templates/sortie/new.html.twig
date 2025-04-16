@@ -4,14 +4,14 @@
 {% block title %}New Sortie{% endblock %}
 
 {% block body %}
-<h1 style="color: #66563C">Create new Sortie</h1>
-<section class="container my-4" style="background-color: #AEEBE7; padding: 20px; border-radius: 8px;">
+    <h1 style="color: #66563C">Créer une nouvelle sortie</h1>
+    <section class="container my-4" style="background-color: #AEEBE7; padding: 20px; border-radius: 8px;">
 
-<div data-controller="geo-api"  >
-    {{ include('sortie/_form.html.twig') }}
-</div>
-</section>
-{#    <a href="{{ path('app_sortie_index') }}">back to list</a>#}
+        <div data-controller="geo-api">
+            {{ include('sortie/_form.html.twig') }}
+        </div>
+    </section>
+    {#    <a href="{{ path('app_sortie_index') }}">back to list</a> #}
 
 
 {% endblock %}

@@ -6,78 +6,81 @@
 
     <h1 class="text-center mb-4" style="color: #66563C">{{ group.name }}</h1>
     <div>
-        <a href="{{ path('app_conversation_show', {'id' : group.conversation.id}) }}" style="background-color: #66563C ; color: white;" class="btn mb-2">Rejoindre la conversation de groupe</a>
+        <a href="{{ path('app_conversation_show', {'id' : group.conversation.id}) }}"
+           style="background-color: #66563C ; color: white;" class="btn mb-2">Rejoindre la conversation de groupe</a>
 
     </div>
     <table class="table table-bordered" style="background-color: #E0FFFF; color: #66563C; border-radius: 8px;">
         <tbody>
-            <tr>
-                <th style="background-color: #B0E0E6; color: #66563C;">Nom du groupe : </th>
-                <td>{{ group.name }}</td>
-            </tr>
-            <tr>
-                <th style="background-color: #B0E0E6; color: #66563C;">Créateur : </th>
-                <td><a href="{{ path('app_user_show', {'id': group.owner.id}) }}" style="color: #66563C;">{{ group.owner.firstName }} {{ group.owner.lastName }}</a></td>
-            </tr>
-            <tr>
-                <th style="background-color: #B0E0E6; color: #66563C;">Date de création : </th>
-                <td>{{ group.createdAt ? group.createdAt|date('Y-m-d H:i:s') : '' }}</td>
-            </tr>
-            <tr>
-                <th style="background-color: #B0E0E6; color: #66563C;">Description : </th>
-                <td>{{ group.description }}</td>
-            </tr>
-            <tr>
-                <th style="background-color: #B0E0E6; color: #66563C;">Membres : </th>
-             <td>
-                 {% for membre in group.teammate %}
-                     <a href="{{ path('app_user_show', {'id': membre.id}) }}" style="color: #66563C;">{{ membre.firstName }} {{ membre.lastName }}</a>{% if not loop.last %}, {% endif %}
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Nom du groupe :</th>
+            <td>{{ group.name }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Créateur :</th>
+            <td><a href="{{ path('app_user_show', {'id': group.owner.id}) }}"
+                   style="color: #66563C;">{{ group.owner.firstName }} {{ group.owner.lastName }}</a></td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Date de création :</th>
+            <td>{{ group.createdAt ? group.createdAt|date('Y-m-d H:i:s') : '' }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Description :</th>
+            <td>{{ group.description }}</td>
+        </tr>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Membres :</th>
+            <td>
+                {% for membre in group.teammate %}
+                    <a href="{{ path('app_user_show', {'id': membre.id}) }}"
+                       style="color: #66563C;">{{ membre.firstName }} {{ membre.lastName }}</a>{% if not loop.last %}, {% endif %}
 
-                 {% endfor %}
-             </td>
-            </tr>
+                {% endfor %}
+            </td>
+        </tr>
         </tbody>
     </table>
 
-    <a class="btn btn-primary" href="{{ path('app_group_index') }}">Back to list</a>
+    <a class="btn btn-primary" href="{{ path('app_group_index') }}">Retour à la liste</a>
 
     {% if app.user is same as group.owner or is_granted('ROLE_ADMIN') %}
-        <a class="btn btn-warning" href="{{ path('app_group_edit', {'id': group.id}) }}">Edit</a>
+        <a class="btn btn-warning" href="{{ path('app_group_edit', {'id': group.id}) }}">Modifier</a>
         {{ include('group/_delete_form.html.twig') }}
     {% endif %}
 
 
-       <h2 class="text-center mb-4" style="color: #66563C">Prochaines sorties des membres</h2>
-        <table class="table table-bordered" style="background-color: #E0FFFF; color: #66563C; border-radius: 8px;">
-            <thead>
+    <h2 class="text-center mb-4" style="color: #66563C">Prochaines sorties des membres</h2>
+    <table class="table table-bordered" style="background-color: #E0FFFF; color: #66563C; border-radius: 8px;">
+        <thead>
+        <tr>
+            <th style="background-color: #B0E0E6; color: #66563C;">Titre</th>
+            <th style="background-color: #B0E0E6; color: #66563C;">Description</th>
+            <th style="background-color: #B0E0E6; color: #66563C;">Date</th>
+            <th style="background-color: #B0E0E6; color: #66563C;">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if futureSorties is not empty %}
+            {% for sortie in futureSorties %}
                 <tr>
-                    <th style="background-color: #B0E0E6; color: #66563C;">Titre</th>
-                    <th style="background-color: #B0E0E6; color: #66563C;">Description</th>
-                    <th style="background-color: #B0E0E6; color: #66563C;">Date</th>
-                    <th style="background-color: #B0E0E6; color: #66563C;">Actions</th>
+                    <td>{{ sortie.nom }}</td>
+                    <td>{{ sortie.description }}</td>
+                    <td>{{ sortie.startAt ? sortie.startAt|date('Y-m-d H:i:s') : '' }}</td>
+                    <td>
+                        <a class="btn btn-primary" href="{{ path('app_sortie_show', {'id': sortie.id}) }}">Voir</a>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-            {%  if futureSorties is not empty %}
-                {% for sortie in futureSorties %}
-                    <tr>
-                        <td>{{ sortie.nom }}</td>
-                        <td>{{ sortie.description }}</td>
-                        <td>{{ sortie.startAt ? sortie.startAt|date('Y-m-d H:i:s') : '' }}</td>
-                        <td>
-                            <a class="btn btn-primary" href="{{ path('app_sortie_show', {'id': sortie.id}) }}">Show</a>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="3" class="text-center">Aucune sortie à venir.</td>
-                    </tr>
-                {% endfor %}
             {% else %}
                 <tr>
                     <td colspan="3" class="text-center">Aucune sortie à venir.</td>
                 </tr>
-            {% endif %}
-            </tbody>
-        </table>
+            {% endfor %}
+        {% else %}
+            <tr>
+                <td colspan="3" class="text-center">Aucune sortie à venir.</td>
+            </tr>
+        {% endif %}
+        </tbody>
+    </table>
 {% endblock %}

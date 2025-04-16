@@ -13,22 +13,28 @@
     <h1 class="mt-5" style="color: #66563C  ;">Liste des sorties</h1>
     <section class="container my-4" style="background-color: #AEEBE7; padding: 20px; border-radius: 8px;">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <a class="btn" href="{{ path('app_sortie_new') }}" style="background-color: #66563C ; color: white;">Créer une nouvelle sortie</a>
+            <a class="btn" href="{{ path('app_sortie_new') }}" style="background-color: #66563C ; color: white;">Créer
+                une nouvelle sortie</a>
 
             <form method="get" action="{{ path('app_sortie_filter') }}" class="d-flex">
-                <input type="text" class="form-control me-2" name="search" placeholder="Rechercher une sortie" value="{{ app.request.query.get('search') }}" style="border-color: #AEEBE7;">
+                <input type="text" class="form-control me-2" name="search" placeholder="Rechercher une sortie"
+                       value="{{ app.request.query.get('search') }}" style="border-color: #AEEBE7;">
                 <button type="submit" class="btn" style="background-color: #66563C ; color: white;">Rechercher</button>
             </form>
         </div>
         <div class="d-flex flex-column gap-3">
             <form method="get" action="{{ path('app_sortie_filter') }}" class="d-flex gap-2">
-                <input type="date" class="form-control" name="start_date" value="{{ app.request.query.get('start_date') }}" style="border-color: #AEEBE7;">
-                <input type="date" class="form-control" name="end_date" value="{{ app.request.query.get('end_date') }}" style="border-color: #AEEBE7;">
-                <button type="submit" class="btn" style="background-color: #66563C ; color: white;">Filtrer par dates</button>
+                <input type="date" class="form-control" name="start_date"
+                       value="{{ app.request.query.get('start_date') }}" style="border-color: #AEEBE7;">
+                <input type="date" class="form-control" name="end_date" value="{{ app.request.query.get('end_date') }}"
+                       style="border-color: #AEEBE7;">
+                <button type="submit" class="btn" style="background-color: #66563C ; color: white;">Filtrer par dates
+                </button>
             </form>
             <div>
                 <div class="mb-3">
-                    <select name="site" id="site" class="form-select" onchange="location = this.value;" style="border-color: #AEEBE7;">
+                    <select name="site" id="site" class="form-select" onchange="location = this.value;"
+                            style="border-color: #AEEBE7;">
                         <option value="">-- Choisir un Site --</option>
                         {% for site in sites %}
                             <option value="{{ path('app_sortie_filter', {'site' :  site.id }) }}">{{ site.name }}</option>
@@ -40,69 +46,85 @@
         <div class="row">
             <div class="col-md-6">
                 <div class="list-group">
-                    <a href="{{ path('app_sortie_filter') }}" class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Toutes les sorties</a>
-                    <a href="{{ path('app_sortie_filter', {'planner' : 'organisteur'}) }}" class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Sorties dont je suis l'organisateur/trice</a>
-                    <a href="{{ path('app_sortie_filter', {'members' : 'inscrit'}) }}" class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Sorties auxquelles je suis inscrit/e</a>
+                    <a href="{{ path('app_sortie_filter') }}" class="list-group-item list-group-item-action"
+                       style="background-color: white; color: #66563C;">Toutes les sorties</a>
+                    <a href="{{ path('app_sortie_filter', {'planner' : 'organisteur'}) }}"
+                       class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Sorties
+                        dont je suis l'organisateur/trice</a>
+                    <a href="{{ path('app_sortie_filter', {'members' : 'inscrit'}) }}"
+                       class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Sorties
+                        auxquelles je suis inscrit/e</a>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="list-group">
-                    <a href="{{ path('app_sortie_filter', {'members' : 'noInscrit'}) }}" class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Sorties auxquelles je ne suis pas inscrit/e</a>
-                    <a href="{{ path('app_sortie_filter', {'status': 'ouverte'}) }}" class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Sorties ouvertes</a>
-                    <a href="{{ path('app_sortie_filter', {'status' : 'terminée'}) }}" class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Sorties passées</a>
+                    <a href="{{ path('app_sortie_filter', {'members' : 'noInscrit'}) }}"
+                       class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Sorties
+                        auxquelles je ne suis pas inscrit/e</a>
+                    <a href="{{ path('app_sortie_filter', {'status': 'ouverte'}) }}"
+                       class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Sorties
+                        ouvertes</a>
+                    <a href="{{ path('app_sortie_filter', {'status' : 'terminée'}) }}"
+                       class="list-group-item list-group-item-action" style="background-color: white; color: #66563C;">Sorties
+                        passées</a>
                 </div>
             </div>
         </div>
     </section>
 
     <table class="table table-striped" style="background-color: #D7C697; border-radius: 8px;">
-            <thead style="background-color: #66563C; color: white;">
-            <tr>
-                <th style="background-color: #E0FFFF; color: #66563C ">Nom de l'évènement</th>
-                <th style="background-color: #E0FFFF ; color: #66563C">Début de l'évènement</th>
-                <th style="background-color: #E0FFFF; color: #66563C">Limite d'inscriptions</th>
-                <th style="background-color: #E0FFFF; color: #66563C">Etat</th>
-                <th style="background-color: #E0FFFF; color: #66563C">Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for sortie in sorties %}
-                {% if sortie.isArchive is same as false %}
-                    <tr>
-                        <td>{{ sortie.nom }}</td>
-                        <td>{{ sortie.startAt ? sortie.startAt|format_datetime(locale='fr', pattern="EEEE dd MMMM YYYY") : '' }}</td>
-                        <td>{{ sortie.members|length }} / {{ sortie.limitMembers }}</td>
-                        <td>
-                            <span class="badge" style="background-color: {% if sortie.status.name == 'Ouverte' %}green{% elseif sortie.status.name == 'En cours' %}dodgerblue{% else %}red{% endif %}; color: white;">
+        <thead style="background-color: #66563C; color: white;">
+        <tr>
+            <th style="background-color: #E0FFFF; color: #66563C ">Nom de l'évènement</th>
+            <th style="background-color: #E0FFFF ; color: #66563C">Début de l'évènement</th>
+            <th style="background-color: #E0FFFF; color: #66563C">Limite d'inscriptions</th>
+            <th style="background-color: #E0FFFF; color: #66563C">Etat</th>
+            <th style="background-color: #E0FFFF; color: #66563C">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for sortie in sorties %}
+            {% if sortie.isArchive is same as false %}
+                <tr>
+                    <td>{{ sortie.nom }}</td>
+                    <td>{{ sortie.startAt ? sortie.startAt|format_datetime(locale='fr', pattern="EEEE dd MMMM YYYY") : '' }}</td>
+                    <td>{{ sortie.members|length }} / {{ sortie.limitMembers }}</td>
+                    <td>
+                            <span class="badge"
+                                  style="background-color: {% if sortie.status.name == 'Ouverte' %}green{% elseif sortie.status.name == 'En cours' %}dodgerblue{% else %}red{% endif %}; color: white;">
                                 {{ sortie.status.name }}
                             </span>
-                        </td>
-                        <td>
-                            <a class="btn btn-primary" href="{{ path('app_sortie_show', {'id': sortie.id}) }}" >Show</a>
-                            {% if app.user and sortie.status.name is same as 'Ouverte' and not sortie.members.contains(app.user) %}
-                                <form method="post" action="{{ path('app_sortie_sub', {'id': sortie.id}) }}" style="display: inline;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('inscription' ~ sortie.id) }}">
-                                    <button type="submit" class="btn btn-success">S'inscrire</button>
-                                </form>
-                            {% endif %}
-                            {% if app.user and sortie.members.contains(app.user) and (sortie.status.name is same as 'Ouverte' or sortie.status.name is same as 'Cloturée') %}
-                                <form method="post" action="{{ path('app_sortie_unSub', {'id': sortie.id}) }}" style="display: inline;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('desinscription' ~ sortie.id) }}">
-                                    <button type="submit" class="btn btn-warning">Se désister</button>
-                                </form>
-                            {% endif %}
-                            {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user %}
-                                <a class="btn btn-warning" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">Edit</a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endif %}
-            {% else %}
-                <tr>
-                    <td colspan="5" class="text-center text-muted">Aucun enregistrement trouvé</td>
+                    </td>
+                    <td>
+                        <a class="btn btn-primary" href="{{ path('app_sortie_show', {'id': sortie.id}) }}">Show</a>
+                        {% if app.user and sortie.status.name is same as 'Ouverte' and not sortie.members.contains(app.user) %}
+                            <form method="post" action="{{ path('app_sortie_sub', {'id': sortie.id}) }}"
+                                  style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('inscription' ~ sortie.id) }}">
+                                <button type="submit" class="btn btn-success">S'inscrire</button>
+                            </form>
+                        {% endif %}
+                        {% if app.user and sortie.members.contains(app.user) and (sortie.status.name is same as 'Ouverte' or sortie.status.name is same as 'Cloturée') %}
+                            <form method="post" action="{{ path('app_sortie_unSub', {'id': sortie.id}) }}"
+                                  style="display: inline;">
+                                <input type="hidden" name="_token"
+                                       value="{{ csrf_token('desinscription' ~ sortie.id) }}">
+                                <button type="submit" class="btn btn-warning">Se désister</button>
+                            </form>
+                        {% endif %}
+                        {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user %}
+                            <a class="btn btn-warning"
+                               href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">Modifier</a>
+                        {% endif %}
+                    </td>
                 </tr>
-            {% endfor %}
-            </tbody>
+            {% endif %}
+        {% else %}
+            <tr>
+                <td colspan="5" class="text-center text-muted">Aucun enregistrement trouvé</td>
+            </tr>
+        {% endfor %}
+        </tbody>
     </table>
 
 
