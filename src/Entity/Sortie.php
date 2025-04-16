@@ -76,12 +76,10 @@ class Sortie
         max: 1000,
         maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères'
     )]
-
     private ?string $description = null;
 
     #[ORM\ManyToOne(inversedBy: 'sorties')]
     #[ORM\JoinColumn(nullable: false)]
-
     private ?Etat $status = null;
 
     #[ORM\Column]
@@ -119,7 +117,6 @@ class Sortie
         message: 'La date de début d\'inscription doit être inférieure à la date limite d\'inscription'
     )]
     #[Assert\Type(type: \DateTimeImmutable::class, message: 'La date de début d\'inscription doit être au format valide')]
-
     private ?\DateTimeImmutable $registerStartAt = null;
 
     #[ORM\Column]
@@ -128,20 +125,27 @@ class Sortie
     #[ORM\ManyToOne(inversedBy: 'sorties')]
     private ?MotifAnnulation $motifsCancel = null;
 
-#[ORM\OneToMany(mappedBy: 'sortie', targetEntity: NotificationLog::class, orphanRemoval: true)]
-private Collection $notificationLogs;
+    #[ORM\OneToMany(mappedBy: 'sortie', targetEntity: NotificationLog::class, orphanRemoval: true)]
+    private Collection $notificationLogs;
 
-/**
- * @var Collection<int, Comment>
- */
-#[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'sortie', cascade: ['remove'])]
-private Collection $comments;
+    /**
+     * @var Collection<int, Comment>
+     */
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'sortie', cascade: ['remove'])]
+    private Collection $comments;
+
+    /**
+     * @var Collection<int, Rating>
+     */
+    #[ORM\OneToMany(targetEntity: Rating::class, mappedBy: 'sortie')]
+    private Collection $ratings;
 
     public function __construct()
     {
         $this->members = new ArrayCollection();
         $this->notificationLogs = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->ratings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -412,6 +416,46 @@ private Collection $comments;
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Rating>
+     */
+    public function getRatings(): Collection
+    {
+        return $this->ratings;
+    }
+
+    public function addRating(Rating $rating): static
+    {
+        if (!$this->ratings->contains($rating)) {
+            $this->ratings->add($rating);
+            $rating->setSortie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRating(Rating $rating): static
+    {
+        if ($this->ratings->removeElement($rating)) {
+            // set the owning side to null (unless already changed)
+            if ($rating->getSortie() === $this) {
+                $rating->setSortie(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function calculateAverageRating(): ?float
+    {
+        if ($this->ratings->isEmpty()) {
+            return null;
+        }
+
+        $total = array_reduce($this->ratings->toArray(), fn($sum, $rating) => $sum + $rating->getValue(), 0);
+        return $total / count($this->ratings);
     }
 
 

@@ -1,0 +1,21 @@
+{% extends 'base.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
+
+{% block title %}Noter la sortie{% endblock %}
+
+{% block body %}
+    <h1 class="text-center mb-4" style="color: #66563C">Noter la sortie : {{ sortie.nom }}</h1>
+
+    <div class="card p-4 shadow-sm" style="background-color: #E0FFFF; color: #66563C;">
+        {{ form_start(form) }}
+        <div class="mb-3">
+            {{ form_label(form.value, 'Votre note (1 à 5)', {'label_attr': {'class': 'form-label'}}) }}
+            {{ form_widget(form.value, {'attr': {'class': 'form-control', 'min': 1, 'max': 5}}) }}
+            {{ form_errors(form.value) }}
+        </div>
+        <button type="submit" class="btn btn-success">Envoyer</button>
+        {{ form_end(form) }}
+    </div>
+
+    <a href="{{ path('app_sortie_show', { id: sortie.id }) }}" class="btn btn-danger mt-3">Retour à la sortie</a>
+{% endblock %}
