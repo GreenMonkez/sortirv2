@@ -10,8 +10,15 @@
     <a href="{{ path('app_user_new') }}" class=" btn mb-3" style="background-color: #66563C ; color: white;">Créer
         utilisateur</a>
     <a href="{{ path('app_user_import') }}" class="btn btn-success mb-3">Importer utilisateurs</a>
-    <a href="{{ path('app_user_export') }}" class="btn btn-info mb-3">Exporter utilisateurs</a>
+    <a href="{{ path('app_user_export') }}" class="btn btn-info mb-3" onclick="return confirmExport();">Exporter
+        utilisateurs</a>
 
+    <script>
+        function confirmExport() {
+            return confirm("Êtes-vous sûr de vouloir exporter les utilisateurs ?");
+        }
+    </script>
+    
     {{ form_start(form) }}
     <div class="row">
         <div class="col-md-3">{{ form_row(form.pseudo) }}</div>
@@ -29,15 +36,15 @@
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover">
             <thead class="table-light">
-                <tr>
-                    <th style="background-color: #E0FFFF; color: #66563C">Pseudo</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Prénom</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Nom</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Téléphone</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Email</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Actif</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Actions</th>
-                </tr>
+            <tr>
+                <th style="background-color: #E0FFFF; color: #66563C">Pseudo</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Prénom</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Nom</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Téléphone</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Email</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Actif</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Actions</th>
+            </tr>
             </thead>
             <tbody>
             {% for user in pagination %}
@@ -68,4 +75,59 @@
     <div class="pagination">
         {{ knp_pagination_render(pagination) }}
     </div>
+
+    <div class="chart-container" style="width: 50%; margin: auto;">
+        <canvas id="userStatsChart"></canvas>
+    </div>
+
+    <script type="module">
+        import {Chart} from 'chart.js';
+
+        fetch('{{ path('app_user_stats') }}')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('userStatsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar', // Graph type
+                    data: {
+                        labels: data.labels, // Labels for the X-axis
+                        datasets: [{
+                            label: 'Utilisateurs', // Label for the dataset
+                            data: data.data, // Data for the Y-axis
+                            backgroundColor: ['#4CAF50', '#F44336'], // Colors for the bars
+                            borderColor: ['#388E3C', '#D32F2F'], // Border colors
+                            borderWidth: 1, // Border width
+                        }],
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'top',
+                            },
+                            tooltip: {
+                                enabled: true,
+                            },
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Statut des utilisateurs',
+                                },
+                            },
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Nombre d\'utilisateurs',
+                                },
+                            },
+                        },
+                    },
+                });
+            });
+    </script>
+
 {% endblock %}

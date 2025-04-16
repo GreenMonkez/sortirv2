@@ -531,4 +531,19 @@ final class UserController extends AbstractController
 
         return new JsonResponse($data);
     }
+
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/stats', name: 'app_user_stats', methods: ['GET'])]
+    public function stats(
+        UserRepository $userRepository
+    ): JsonResponse
+    {
+        $activeUsers = $userRepository->count(['isActive' => true]);
+        $inactiveUsers = $userRepository->count(['isActive' => false]);
+
+        return new JsonResponse([
+            'labels' => ['Actifs', 'Inactifs'],
+            'data' => [$activeUsers, $inactiveUsers],
+        ]);
+    }
 }
