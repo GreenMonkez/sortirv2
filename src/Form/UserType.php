@@ -110,6 +110,9 @@ class UserType extends AbstractType
                 'label' => 'Ma photo :',
                 'mapped' => false,
                 'required' => false,
+                'attr' => [
+                    'placeholder' => 'Déposez votre photo ici ou cliquez pour sélectionner un fichier',
+                ],
                 'constraints' => [
                     new File([
                         'maxSize' => '2M',
