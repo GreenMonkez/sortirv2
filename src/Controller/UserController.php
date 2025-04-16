@@ -30,9 +30,9 @@ final class UserController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     #[Route(name: 'app_user_index', methods: ['GET'])]
     public function index(
-        UserRepository $userRepository,
+        UserRepository     $userRepository,
         PaginatorInterface $paginator,
-        Request $request
+        Request            $request
     ): Response
     {
         $form = $this->createForm(UserFilterType::class, null, [
@@ -94,15 +94,15 @@ final class UserController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     #[Route('/new', name: 'app_user_new', methods: ['GET', 'POST'])]
     public function new(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher,
+        Request                      $request,
+        EntityManagerInterface       $entityManager,
+        UserPasswordHasherInterface  $passwordHasher,
         ResetPasswordHelperInterface $resetPasswordHelper,
-        MailerInterface $mailer
+        MailerInterface              $mailer
     ): Response
     {
         $user = new User();
-        $form = $this->createForm(UserType::class, $user);
+        $form = $this->createForm(UserType::class, $user, ['is_edit' => false]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -111,7 +111,7 @@ final class UserController extends AbstractController
 
             if ($photoFile) {
                 // Generate a unique filename for the new photo
-                $newFilename = uniqid().'.'.$photoFile->guessExtension();
+                $newFilename = uniqid() . '.' . $photoFile->guessExtension();
 
                 try {
                     // Move the file to the directory where profile pictures are stored
@@ -184,9 +184,9 @@ final class UserController extends AbstractController
     #[IsGranted('ROLE_USER')]
     #[Route('/{id}/edit', name: 'app_user_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function edit(
-        Request $request,
-        User $user,
-        EntityManagerInterface $entityManager,
+        Request                     $request,
+        User                        $user,
+        EntityManagerInterface      $entityManager,
         UserPasswordHasherInterface $passwordHasher
     ): Response
     {
@@ -195,7 +195,7 @@ final class UserController extends AbstractController
             throw $this->createAccessDeniedException('You do not have permission to edit this user.');
         }
 
-        $form = $this->createForm(UserType::class, $user);
+        $form = $this->createForm(UserType::class, $user, ['is_edit' => true]);
         $oldPassword = $user->getPassword();
         $form->handleRequest($request);
 
@@ -208,7 +208,7 @@ final class UserController extends AbstractController
                 $oldPhoto = $user->getPhoto();
 
                 // Generate a unique filename for the new photo
-                $newFilename = uniqid().'.'.$photoFile->guessExtension();
+                $newFilename = uniqid() . '.' . $photoFile->guessExtension();
 
                 try {
                     // Move the file to the directory where profile pictures are stored
@@ -219,12 +219,15 @@ final class UserController extends AbstractController
                 } catch (FileException $e) {
                     // Handle exception if something happens during file upload
                     $this->addFlash('error', 'Erreur lors de l\'upload de la photo.');
-                    return $this->redirectToRoute('app_user_edit', ['id' => $user->getId()]);
+                    return $this->render('user/edit.html.twig', [
+                        'user' => $user,
+                        'form' => $form,
+                    ]);
                 }
 
                 // Delete the old photo if it exists
                 if ($oldPhoto) {
-                    $oldPhotoPath = $this->getParameter('photo_directory').'/'.$oldPhoto;
+                    $oldPhotoPath = $this->getParameter('photo_directory') . '/' . $oldPhoto;
                     if (file_exists($oldPhotoPath)) {
                         unlink($oldPhotoPath);
                     }
@@ -255,7 +258,7 @@ final class UserController extends AbstractController
             if (!$this->isGranted('ROLE_ADMIN')) {
                 $this->addFlash('success', 'Votre compte a bien été mis à jour !');
                 return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
-            }else{
+            } else {
                 $this->addFlash('success', 'L\'utilisateur a bien été mis à jour !');
                 return $this->redirectToRoute('app_user_index', [], Response::HTTP_SEE_OTHER);
             }
@@ -270,12 +273,12 @@ final class UserController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     #[Route('/{id}', name: 'app_user_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
     public function delete(
-        Request $request,
-        User $user,
+        Request                $request,
+        User                   $user,
         EntityManagerInterface $entityManager
     ): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->getPayload()->getString('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $user->getId(), $request->getPayload()->getString('_token'))) {
             // Get the old photo filename
             $oldPhoto = $user->getPhoto();
 
@@ -290,7 +293,7 @@ final class UserController extends AbstractController
 
             // Delete the old photo if it exists
             if ($oldPhoto) {
-                $oldPhotoPath = $this->getParameter('photo_directory').'/'.$oldPhoto;
+                $oldPhotoPath = $this->getParameter('photo_directory') . '/' . $oldPhoto;
                 if (file_exists($oldPhotoPath)) {
                     unlink($oldPhotoPath);
                 }
@@ -307,13 +310,14 @@ final class UserController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     #[Route('/import', name: 'app_user_import', methods: ['GET', 'POST'])]
     public function importCsv(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $passwordHasher,
-        SiteRepository $siteRepository,
+        Request                      $request,
+        EntityManagerInterface       $entityManager,
+        UserPasswordHasherInterface  $passwordHasher,
+        SiteRepository               $siteRepository,
         ResetPasswordHelperInterface $resetPasswordHelper,
-        MailerInterface $mailer
-    ): Response {
+        MailerInterface              $mailer
+    ): Response
+    {
         $form = $this->createForm(CsvUploadType::class);
         $form->handleRequest($request);
 
@@ -414,7 +418,7 @@ final class UserController extends AbstractController
                         $entityManager->commit(); // Commit the transaction
 
                         // Send emails to imported users
-                        foreach ($importedUsers as $importedUser){
+                        foreach ($importedUsers as $importedUser) {
                             // Generate a reset token
                             $resetToken = $resetPasswordHelper->generateResetToken($importedUser);
 
@@ -460,10 +464,11 @@ final class UserController extends AbstractController
 
 
     #[Route('/ajax/users-by-site/{id}', name: 'ajax_users_by_site')]
-    public function getUsersBySite(Site $site, UserRepository $userRepository): JsonResponse
+    public function getUsersBySite(
+        Site           $site,
+        UserRepository $userRepository
+    ): JsonResponse
     {
-
-
         $users = $userRepository->createQueryBuilder('u')
             ->where('u.site = :site')
             ->setParameter('site', $site)
@@ -480,5 +485,4 @@ final class UserController extends AbstractController
 
         return new JsonResponse($data);
     }
-
 }

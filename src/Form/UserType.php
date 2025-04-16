@@ -8,7 +8,6 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -29,6 +28,7 @@ class UserType extends AbstractType
     {
         $this->security = $security;
     }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -70,8 +70,11 @@ class UserType extends AbstractType
             ])
             ->add('phoneNumber', null, [
                 'label' => 'Téléphone :',
-            ])
-            ->add('email', EmailType::class, [
+            ]);
+
+        // Add email field only if it's not an edit form
+        if (!$options['is_edit']) {
+            $builder->add('email', EmailType::class, [
                 'label' => 'Email :',
                 'constraints' => [
                     new NotBlank(['message' => 'Un email est requis']),
@@ -82,10 +85,11 @@ class UserType extends AbstractType
                     ]),
                 ],
             ]);
+        }
 
-            if (!$this->security->isGranted('ROLE_ADMIN')) {
-                $builder
-                    ->add('password', RepeatedType::class, array(
+        if (!$this->security->isGranted('ROLE_ADMIN')) {
+            $builder
+                ->add('password', RepeatedType::class, array(
                     'type' => PasswordType::class,
                     'required' => false,
                     'constraints' => array(
@@ -96,13 +100,13 @@ class UserType extends AbstractType
                             'maxMessage' => 'Votre mot de passe ne peut pas faire plus de {{ limit }} caractères',
                         ]),
                     ),
-                    'first_options'  => array('label' => 'Mot de passe :'),
+                    'first_options' => array('label' => 'Mot de passe :'),
                     'second_options' => array('label' => 'Confirmation :'),
                 ));
-            }
+        }
 
-            $builder
-                ->add('photo', FileType::class, [
+        $builder
+            ->add('photo', FileType::class, [
                 'label' => 'Ma photo :',
                 'mapped' => false,
                 'required' => false,
@@ -116,8 +120,7 @@ class UserType extends AbstractType
                         'mimeTypesMessage' => 'Veuillez uploader une image valide (JPEG ou PNG).',
                     ]),
                 ],
-            ])
-        ;
+            ]);
 
         // Add isActive field if the user is an admin
         if ($this->security->isGranted('ROLE_ADMIN')) {
@@ -127,9 +130,9 @@ class UserType extends AbstractType
                 'choice_label' => 'name',
             ])
                 ->add('isActive', CheckboxType::class, [
-                'required' => false,
-                'label' => 'Compte actif',
-            ]);
+                    'required' => false,
+                    'label' => 'Compte actif',
+                ]);
         }
     }
 
@@ -137,6 +140,7 @@ class UserType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
+            'is_edit' => false,
         ]);
     }
 }
