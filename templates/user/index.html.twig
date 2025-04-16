@@ -10,6 +10,7 @@
     <a href="{{ path('app_user_new') }}" class=" btn mb-3" style="background-color: #66563C ; color: white;">Créer
         utilisateur</a>
     <a href="{{ path('app_user_import') }}" class="btn btn-success mb-3">Importer utilisateurs</a>
+    <a href="{{ path('app_user_export') }}" class="btn btn-info mb-3">Exporter utilisateurs</a>
 
     {{ form_start(form) }}
     <div class="row">
@@ -28,15 +29,15 @@
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover">
             <thead class="table-light">
-            <tr>
-                <th style="background-color: #E0FFFF; color: #66563C">Pseudo</th>
-                <th style="background-color: #E0FFFF; color: #66563C">Prénom</th>
-                <th style="background-color: #E0FFFF; color: #66563C">Nom</th>
-                <th style="background-color: #E0FFFF; color: #66563C">Téléphone</th>
-                <th style="background-color: #E0FFFF; color: #66563C">Email</th>
-                <th style="background-color: #E0FFFF; color: #66563C">Actif</th>
-                <th style="background-color: #E0FFFF; color: #66563C">Actions</th>
-            </tr>
+                <tr>
+                    <th style="background-color: #E0FFFF; color: #66563C">Pseudo</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Prénom</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Nom</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Téléphone</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Email</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Actif</th>
+                    <th style="background-color: #E0FFFF; color: #66563C">Actions</th>
+                </tr>
             </thead>
             <tbody>
             {% for user in pagination %}
