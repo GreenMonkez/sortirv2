@@ -3,11 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Comment;
-use App\Entity\Rating;
 use App\Entity\Sortie;
 use App\EntityListener\SortieArchiver;
 use App\Form\CommentType;
-use App\Form\RatingType;
 use App\Form\SortieType;
 use App\Repository\EtatRepository;
 use App\Repository\MotifAnnulationRepository;
@@ -112,17 +110,17 @@ final class SortieController extends AbstractController
         $form->handleRequest($request);
 
 
-      if ($form->isSubmitted() && $request->get('sortie')['lieu']['departement'] && $request->get('sortie')['lieu']['city']) {
+        if ($form->isSubmitted() && $request->get('sortie')['lieu']['departement'] && $request->get('sortie')['lieu']['city']) {
 
             // Récupérer les données des champs non mappés
             $region = $sortie->getLieu()->getRegion();
             $departement = $request->get('sortie')['lieu']['departement'];
             $ville = $request->get('sortie')['lieu']['city'];
 
-          // Ajouter les données récupérées au modèle
-          $sortie->getLieu()?->setRegion($region);
-          $sortie->getLieu()?->setDepartement($departement);
-          $sortie->getLieu()?->setCity($ville);
+            // Ajouter les données récupérées au modèle
+            $sortie->getLieu()?->setRegion($region);
+            $sortie->getLieu()?->setDepartement($departement);
+            $sortie->getLieu()?->setCity($ville);
 
 
             // Conserver les données existantes
@@ -188,86 +186,6 @@ final class SortieController extends AbstractController
         ]);
     }
 
-    /**
-     * Méthode permettant de réagir à un commentaire
-     * @param Comment $comment
-     * @param Request $request
-     * @param EntityManagerInterface $entityManager
-     * @return Response
-     */
-    #[Route('/comment/{id}/react', name: 'comment_react', methods: ['POST'])]
-    public function react(
-        Comment                $comment,
-        Request                $request,
-        EntityManagerInterface $entityManager
-    ): Response
-    {
-        $emoji = $request->request->get('emoji');
-        $user = $this->getUser();
-
-        // Vérifie si l'emoji est valide
-        $validEmojis = ['👍', '❤️', '😂'];
-        if ($emoji && in_array($emoji, $validEmojis, true)) {
-
-            // Vérifie si l'utilisateur a déjà réagi avec cet emoji
-            $existingReaction = array_filter($comment->getReactions(), function ($reaction) use ($emoji, $user) {
-
-                return $reaction['emoji'] === $emoji && $reaction['user'] === $user->getId();
-            });
-
-            if ($existingReaction) {
-                // Si une réaction existe, on l'annule
-                $comment->removeReaction($emoji, $user);
-            } else {
-                // Sinon, on ajoute la réaction
-                $comment->addReaction($emoji, $user);
-            }
-
-            // Enregistre les modifications dans la base de données
-            $entityManager->persist($comment);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_sortie_show', ['id' => $comment->getSortie()->getId()]);
-    }
-
-    #[Route('/sortie/{id}/rate', name: 'sortie_rate', methods: ['POST', 'GET'])]
-    public function rateSortie(
-        Sortie                 $sortie,
-        Request                $request,
-        EntityManagerInterface $em
-    ): Response
-    {
-        $user = $this->getUser();
-
-        $existingRating = $em->getRepository(Rating::class)->findOneBy(['user' => $user, 'sortie' => $sortie]);
-
-        if ($existingRating) {
-            $this->addFlash('danger', 'Vous avez déjà noté cette sortie.');
-            return $this->redirectToRoute('app_sortie_show', ['id' => $sortie->getId()]);
-        }
-
-        $rating = new Rating();
-        $rating->setUser($user);
-        $rating->setSortie($sortie);
-
-        $form = $this->createForm(RatingType::class, $rating);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $em->persist($rating);
-            $em->flush();
-
-            $this->addFlash('success', 'Votre note a été enregistrée.');
-            return $this->redirectToRoute('app_sortie_show', ['id' => $sortie->getId()]);
-        }
-
-        return $this->render('sortie/rate.html.twig', [
-            'sortie' => $sortie,
-            'form' => $form,
-        ]);
-    }
-
     #[Route('/{id}/inscription', name: 'app_sortie_sub')]
     public function inscription(
         Request                $request,
@@ -322,8 +240,7 @@ final class SortieController extends AbstractController
             $mailer->send($email);
 
             $this->addFlash('success', 'Inscription réussie ! Un email de confirmation vous a été envoyé.');
-        }
-        else {
+        } else {
             $this->addFlash('error', 'Token CSRF invalide.');
         }
 
