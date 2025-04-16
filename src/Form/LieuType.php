@@ -68,7 +68,6 @@ public function buildForm(FormBuilderInterface $builder, array $options): void
                 'data-geo-api-target' => 'departement',
                 'data-action' => 'change->geo-api#get_city',
             ],
-            'required' => false, // Facultatif si aucune valeur n'est sélectionnée
         ])
         ->add('city', ChoiceType::class, [
             'label' => 'Ville',
@@ -79,7 +78,6 @@ public function buildForm(FormBuilderInterface $builder, array $options): void
                 'data-geo-api-target' => 'city',
                 'data-action' =>'change->geo-api#get_postcode'
             ],
-            'required' => false, // Facultatif si aucune valeur n'est sélectionnée
         ])
         ->add('street', TextType::class, [
             'label' => 'Rue',

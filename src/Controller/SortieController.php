@@ -105,28 +105,18 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
       $form = $this->createForm(SortieType::class, $sortie);
       $form->handleRequest($request);
 
-      if ($form->isSubmitted()) {
+      if ($form->isSubmitted() && $request->get('sortie')['lieu']['departement'] && $request->get('sortie')['lieu']['city']) {
 
           // Récupérer les données des champs non mappés
           $region = $sortie->getLieu()->getRegion();
           $departement = $request->get('sortie')['lieu']['departement'];
           $ville = $request->get('sortie')['lieu']['city'];
 
-          // Récupérer les données via GeoApiService
-//          $region = $geoApiService->getRegions()[$regionCode] ?? null;
-//          $departement = $geoApiService->getDepartementsByRegion($regionCode)[$departementCode] ?? null;
-//          $ville = $geoApiService->getVillesByDepartement($departementCode)[$villeCode] ?? null;
-
-          // Si un lieu est défini, utiliser ses données
-
-
           // Ajouter les données récupérées au modèle
           $sortie->getLieu()?->setRegion($region);
           $sortie->getLieu()?->setDepartement($departement);
           $sortie->getLieu()?->setCity($ville);
 
-          // Vérifier si le formulaire est valide
-          //if ($form->isValid()) {
               // Conserver les données existantes
               $sortie->setDuration($sortie->getDuration() * 60);
               $sortie->setStatus($this->etatRepository->find(2));
@@ -392,7 +382,7 @@ public function desinscription(Request $request, Sortie $sortie, EntityManagerIn
             $cancel = $this->motifAnnulationRepository->find($request->get('motif'));
             if ($cancel === null) {
                 $this->addFlash('danger', 'Erreur lors de l\'annulation de la sortie !');
-                return $this->redirectToRoute('sortie/edit.html.twig', [], Response::HTTP_SEE_OTHER);
+                return $this->redirectToRoute('app_sortie_edit', [], Response::HTTP_SEE_OTHER);
             }
             $cancel->setCommentaire($request->get('commentaire'));
             $sortie->setMotifsCancel($cancel);
@@ -403,7 +393,7 @@ public function desinscription(Request $request, Sortie $sortie, EntityManagerIn
             return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
         }
         $this->addFlash('danger', 'Erreur lors de l\'annulation de la sortie !');
-        return $this->redirectToRoute('sortie/edit.html.twig', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_sortie_edit', [], Response::HTTP_SEE_OTHER);
     }
 
 
