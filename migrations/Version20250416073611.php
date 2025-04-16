@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250415095443 extends AbstractMigration
+final class Version20250416073611 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,6 +20,9 @@ final class Version20250415095443 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
+        $this->addSql(<<<'SQL'
+            CREATE TABLE comment (id INT AUTO_INCREMENT NOT NULL, author_id INT NOT NULL, sortie_id INT NOT NULL, content LONGTEXT NOT NULL, created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', reactions JSON NOT NULL, INDEX IDX_9474526CF675F31B (author_id), INDEX IDX_9474526CCC72D953 (sortie_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+        SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE conversation (id INT AUTO_INCREMENT NOT NULL, private_group_id INT DEFAULT NULL, name VARCHAR(255) NOT NULL, INDEX IDX_8A8E26E959C206EA (private_group_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
@@ -39,7 +42,7 @@ final class Version20250415095443 extends AbstractMigration
             CREATE TABLE lieu (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) NOT NULL, street VARCHAR(255) NOT NULL, latitude DOUBLE PRECISION DEFAULT NULL, longitude DOUBLE PRECISION DEFAULT NULL, city VARCHAR(255) NOT NULL, postale_code VARCHAR(255) NOT NULL, region VARCHAR(255) NOT NULL, departement VARCHAR(255) NOT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            CREATE TABLE message (id INT AUTO_INCREMENT NOT NULL, conversation_id INT NOT NULL, sender_id INT NOT NULL, content LONGTEXT NOT NULL, sent_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', INDEX IDX_B6BD307F9AC0396 (conversation_id), INDEX IDX_B6BD307FF624B39D (sender_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
+            CREATE TABLE message (id INT AUTO_INCREMENT NOT NULL, conversation_id INT NOT NULL, sender_id INT NOT NULL, content LONGTEXT NOT NULL, sent_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', reactions JSON NOT NULL, INDEX IDX_B6BD307F9AC0396 (conversation_id), INDEX IDX_B6BD307FF624B39D (sender_id), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
             CREATE TABLE motif_annulation (id INT AUTO_INCREMENT NOT NULL, name VARCHAR(255) DEFAULT NULL, commentaire VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
@@ -66,7 +69,13 @@ final class Version20250415095443 extends AbstractMigration
             CREATE TABLE messenger_messages (id BIGINT AUTO_INCREMENT NOT NULL, body LONGTEXT NOT NULL, headers LONGTEXT NOT NULL, queue_name VARCHAR(190) NOT NULL, created_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', available_at DATETIME NOT NULL COMMENT '(DC2Type:datetime_immutable)', delivered_at DATETIME DEFAULT NULL COMMENT '(DC2Type:datetime_immutable)', INDEX IDX_75EA56E0FB7336F0 (queue_name), INDEX IDX_75EA56E0E3BD61CE (available_at), INDEX IDX_75EA56E016BA31DB (delivered_at), PRIMARY KEY(id)) DEFAULT CHARACTER SET utf8mb4 COLLATE `utf8mb4_unicode_ci` ENGINE = InnoDB
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE conversation ADD CONSTRAINT FK_8A8E26E959C206EA FOREIGN KEY (private_group_id) REFERENCES `group` (id)
+            ALTER TABLE comment ADD CONSTRAINT FK_9474526CF675F31B FOREIGN KEY (author_id) REFERENCES user (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE comment ADD CONSTRAINT FK_9474526CCC72D953 FOREIGN KEY (sortie_id) REFERENCES sortie (id)
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE conversation ADD CONSTRAINT FK_8A8E26E959C206EA FOREIGN KEY (private_group_id) REFERENCES `group` (id) ON DELETE CASCADE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE conversation_user ADD CONSTRAINT FK_5AECB5559AC0396 FOREIGN KEY (conversation_id) REFERENCES conversation (id) ON DELETE CASCADE
@@ -81,7 +90,7 @@ final class Version20250415095443 extends AbstractMigration
             ALTER TABLE `group` ADD CONSTRAINT FK_6DC044C5F6BD1646 FOREIGN KEY (site_id) REFERENCES site (id)
         SQL);
         $this->addSql(<<<'SQL'
-            ALTER TABLE `group` ADD CONSTRAINT FK_6DC044C59AC0396 FOREIGN KEY (conversation_id) REFERENCES conversation (id)
+            ALTER TABLE `group` ADD CONSTRAINT FK_6DC044C59AC0396 FOREIGN KEY (conversation_id) REFERENCES conversation (id) ON DELETE CASCADE
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE group_user ADD CONSTRAINT FK_A4C98D39FE54D947 FOREIGN KEY (group_id) REFERENCES `group` (id) ON DELETE CASCADE
@@ -133,6 +142,12 @@ final class Version20250415095443 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
+        $this->addSql(<<<'SQL'
+            ALTER TABLE comment DROP FOREIGN KEY FK_9474526CF675F31B
+        SQL);
+        $this->addSql(<<<'SQL'
+            ALTER TABLE comment DROP FOREIGN KEY FK_9474526CCC72D953
+        SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE conversation DROP FOREIGN KEY FK_8A8E26E959C206EA
         SQL);
@@ -195,6 +210,9 @@ final class Version20250415095443 extends AbstractMigration
         SQL);
         $this->addSql(<<<'SQL'
             ALTER TABLE user_sortie DROP FOREIGN KEY FK_596DC8CFCC72D953
+        SQL);
+        $this->addSql(<<<'SQL'
+            DROP TABLE comment
         SQL);
         $this->addSql(<<<'SQL'
             DROP TABLE conversation

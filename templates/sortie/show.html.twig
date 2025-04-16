@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
 
 {% block title %}Sortie{% endblock %}
 
@@ -88,5 +89,65 @@
                 }
             });
         </script>
+    {% endif %}
+
+    <h2 class="mt-4 mb-3" style="color: #66563C">Commentaires</h2>
+    <ul class="list-group mb-4">
+        {% if sortie.comments |length > 0 %}
+            {% for comment in sortie.comments %}
+                <li class="list-group-item" style="background-color: #E0FFFF; color: #66563C;">
+                    <div class="d-flex justify-content-between">
+                        <strong class="text-dark">{{ comment.author.firstName }} {{ comment.author.lastName }}</strong>
+                        <small class="text-muted">{{ comment.createdAt|date('d/m/Y H:i') }}</small>
+                    </div>
+                    <p class="mt-2 mb-1">{{ comment.content }}</p>
+
+                    <div class="mt-2">
+                        {% if comment.reactions is empty %}
+                            <span class="badge bg-light text-dark me-1">Aucune réaction</span>
+                        {% endif %}
+
+                        {% set emojiCounts = {} %}
+                        {% for comment in comment.reactions %}
+                            {% if comment.emoji is not empty %}
+                                {% if emojiCounts[comment.emoji] is defined %}
+                                    {% set emojiCounts = emojiCounts|merge({ (comment.emoji): emojiCounts[comment.emoji] + 1 }) %}
+                                {% else %}
+                                    {% set emojiCounts = emojiCounts|merge({ (comment.emoji): 1 }) %}
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        {% for emoji, count in emojiCounts %}
+                            <span class="badge bg-light text-dark me-1">
+                                {{ emoji }} {{ count }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                    {% if app.user and (sortie.members.contains(app.user) or sortie.planner is same as app.user) %}
+                        <form action="{{ path('comment_react', {id: comment.id}) }}" method="post" class="mt-2 d-flex gap-2">
+                            <button type="submit" name="emoji" value="👍" class="btn btn-sm btn-outline-primary">👍</button>
+                            <button type="submit" name="emoji" value="❤️" class="btn btn-sm btn-outline-danger">❤️</button>
+                            <button type="submit" name="emoji" value="😂" class="btn btn-sm btn-outline-warning">😂</button>
+                        </form>
+                    {% endif %}
+                </li>
+            {% else %}
+                <li class="list-group-item text-muted">Aucun commentaire pour cette sortie.</li>
+            {% endfor %}
+        {% endif %}
+
+    </ul>
+
+    {% if sortie.members.contains(app.user) or sortie.planner is same as app.user %}
+        <h4 class="mb-3" style="color: #66563C">Ajouter un commentaire</h4>
+        <div class="card p-3 shadow-sm mb-4">
+            {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                <div class="mb-3">
+                    {{ form_widget(form.content, {'attr': {'class': 'form-control', 'placeholder': 'Écrivez votre commentaire ici...'}}) }}
+                </div>
+                <button type="submit" class="btn btn-success">Envoyer</button>
+            {{ form_end(form) }}
+        </div>
     {% endif %}
 {% endblock %}

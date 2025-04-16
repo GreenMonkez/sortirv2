@@ -15,7 +15,10 @@
                          </div>
                          <p class="mt-2 mb-1">{{ messageData.message.content|default('Message vide') }}</p>
 
-                         <div class="reactions mt-2">
+                         <div class="mt-2">
+                             {% if messageData.reactions is empty %}
+                                 <span class="badge bg-light text-dark me-1">Aucune réaction</span>
+                             {% endif %}
                              {% for emoji, count in messageData.reactions %}
                                  <span class="badge bg-light text-dark me-1">
                                      {{ emoji }} {{ count }}

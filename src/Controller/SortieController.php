@@ -2,8 +2,10 @@
 
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\Sortie;
 use App\EntityListener\SortieArchiver;
+use App\Form\CommentType;
 use App\Form\SortieType;
 use App\Repository\EtatRepository;
 use App\Repository\MotifAnnulationRepository;
@@ -145,23 +147,76 @@ public function filter(Request $request, SortieRepository $sortieRepository, Sit
         ]);
     }
     /**
-     * Méthode permettant d'afficher une sortie par son id
+     * Méthode permettant d'afficher une sortie par son id et d'ajouter un commentaire
      * @param Sortie $sortie
      * @return Response
      */
-    #[Route('/{id}', name: 'app_sortie_show', methods: ['GET'])]
-    public function show(Sortie $sortie, SiteRepository $siteRepository): Response
+    #[Route('/{id}', name: 'app_sortie_show', methods: ['GET', 'POST'])]
+    public function show(Request $request, Sortie $sortie, SiteRepository $siteRepository, EntityManagerInterface $entityManager): Response
     {
         $sortie= $this->entityManager->getRepository(Sortie::class)->find($sortie->getId());
         if (!$sortie) {
             throw $this->createNotFoundException('Sortie not found');
         }
 
+        $comment = new Comment();
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $comment->setAuthor($this->getUser());
+            $comment->setSortie($sortie);
+            $entityManager->persist($comment);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Votre commentaire a été ajouté avec succès !');
+            return $this->redirectToRoute('app_sortie_show', ['id' => $sortie->getId()]);
+        }
+
         return $this->render('sortie/show.html.twig', [
             'sortie' => $sortie,
             'site' => $siteRepository->findAll(),
+            'form' => $form,
             'motifs' => $this->motifAnnulationRepository->findAll(), // Récupération des motifs
         ]);
+    }
+
+    /**
+     * Méthode permettant de réagir à un commentaire
+     * @param Comment $comment
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
+    #[Route('/comment/{id}/react', name: 'comment_react', methods: ['POST'])]
+    public function react(Comment $comment, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $emoji = $request->request->get('emoji');
+        $user = $this->getUser();
+
+        // Vérifie si l'emoji est valide
+        $validEmojis = ['👍', '❤️', '😂'];
+        if ($emoji && in_array($emoji, $validEmojis, true)) {
+            // Vérifie si l'utilisateur a déjà réagi avec cet emoji
+            $existingReaction = array_filter($comment->getReactions(), function ($reaction) use ($emoji, $user) {
+//                dd($emoji);
+                return $reaction['emoji'] === $emoji && $reaction['user'] === $user->getId();
+            });
+
+            if ($existingReaction) {
+                // Si une réaction existe, on l'annule
+                $comment->removeReaction($emoji, $user);
+            } else {
+                // Sinon, on ajoute la réaction
+                $comment->addReaction($emoji, $user);
+            }
+
+            // Enregistre les modifications dans la base de données
+            $entityManager->persist($comment);
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_sortie_show', ['id' => $comment->getSortie()->getId()]);
     }
 
    #[Route('/{id}/inscription', name: 'app_sortie_sub')]

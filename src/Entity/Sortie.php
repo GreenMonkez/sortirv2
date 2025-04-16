@@ -8,7 +8,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use phpDocumentor\Reflection\Types\Boolean;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SortieRepository::class)]
@@ -132,10 +131,17 @@ class Sortie
 #[ORM\OneToMany(mappedBy: 'sortie', targetEntity: NotificationLog::class, orphanRemoval: true)]
 private Collection $notificationLogs;
 
+/**
+ * @var Collection<int, Comment>
+ */
+#[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'sortie', cascade: ['remove'])]
+private Collection $comments;
+
     public function __construct()
     {
         $this->members = new ArrayCollection();
         $this->notificationLogs = new ArrayCollection();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -374,6 +380,36 @@ private Collection $notificationLogs;
     public function setMotifsCancel(?MotifAnnulation $motifsCancel): static
     {
         $this->motifsCancel = $motifsCancel;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Comment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): static
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments->add($comment);
+            $comment->setSortie($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComment(Comment $comment): static
+    {
+        if ($this->comments->removeElement($comment)) {
+            // set the owning side to null (unless already changed)
+            if ($comment->getSortie() === $this) {
+                $comment->setSortie(null);
+            }
+        }
 
         return $this;
     }
