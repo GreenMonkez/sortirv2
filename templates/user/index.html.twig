@@ -7,8 +7,10 @@
 {% block body %}
     <h1 class="mt-5 mb-3" style="color: #66563C  ;">Liste utilisateurs</h1>
 
-    <a href="{{ path('app_user_new') }}" class=" btn mb-3" style="background-color: #66563C ; color: white;">Créer utilisateur</a>
+    <a href="{{ path('app_user_new') }}" class=" btn mb-3" style="background-color: #66563C ; color: white;">Créer
+        utilisateur</a>
     <a href="{{ path('app_user_import') }}" class="btn btn-success mb-3">Importer utilisateurs</a>
+    <a href="{{ path('app_user_export') }}" class="btn btn-info mb-3">Exporter utilisateurs</a>
 
     {{ form_start(form) }}
     <div class="row">
@@ -27,15 +29,15 @@
     <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover">
             <thead class="table-light">
-                <tr>
-                    <th style="background-color: #E0FFFF; color: #66563C">Pseudo</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Prénom</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Nom</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Téléphone</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Email</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Actif</th>
-                    <th style="background-color: #E0FFFF; color: #66563C">Actions</th>
-                </tr>
+            <tr>
+                <th style="background-color: #E0FFFF; color: #66563C">Pseudo</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Prénom</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Nom</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Téléphone</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Email</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Actif</th>
+                <th style="background-color: #E0FFFF; color: #66563C">Actions</th>
+            </tr>
             </thead>
             <tbody>
             {% for user in pagination %}
@@ -49,7 +51,7 @@
                         {{ user.isActive ? 'Oui' : 'Non' }}
                     </td>
                     <td>
-                        <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-primary btn-sm" >Show</a>
+                        <a href="{{ path('app_user_show', {'id': user.id}) }}" class="btn btn-primary btn-sm">Show</a>
                         <a href="{{ path('app_user_edit', {'id': user.id}) }}" class="btn btn-warning btn-sm">Edit</a>
                     </td>
                 </tr>

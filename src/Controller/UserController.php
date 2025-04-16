@@ -462,6 +462,52 @@ final class UserController extends AbstractController
         ]);
     }
 
+    #[IsGranted('ROLE_ADMIN')]
+    #[Route('/export', name: 'app_user_export', methods: ['GET'])]
+    public function exportCsv(
+        UserRepository $userRepository
+    ): Response
+    {
+        // Get all users
+        $users = $userRepository->findAll();
+
+        // Create a CSV file in memory
+        $csvContent = fopen('php://memory', 'r+');
+
+        // Set the CSV header to UTF-8
+        fprintf($csvContent, "\xEF\xBB\xBF");
+
+        // Add the header to the CSV
+        fputcsv($csvContent, ['Pseudo', 'Prénom', 'Nom', 'Email', 'Téléphone', 'Site', 'Actif'], ';');
+
+        // Add each user to the CSV
+        foreach ($users as $user) {
+            fputcsv($csvContent, [
+                $user->getPseudo(),
+                $user->getFirstName(),
+                $user->getLastName(),
+                $user->getEmail(),
+                $user->getPhoneNumber(),
+                $user->getSite() ? $user->getSite()->getName() : '',
+                $user->isActive() ? 'Oui' : 'Non',
+            ], ';');
+        }
+
+        // Rewind the file pointer to the beginning
+        rewind($csvContent);
+
+        // Get the contents of the file
+        $csvOutput = stream_get_contents($csvContent);
+
+        // Close the file
+        fclose($csvContent);
+
+        // Create a response with the CSV content
+        return new Response($csvOutput, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="utilisateurs.csv"',
+        ]);
+    }
 
     #[Route('/ajax/users-by-site/{id}', name: 'ajax_users_by_site')]
     public function getUsersBySite(
