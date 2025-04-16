@@ -481,24 +481,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
        return $this;
    }
 
-   /**
-    * @return Collection<int, Conversation>
-    */
-   public function getCreatedConversations(): Collection
-   {
-       return $this->createdConversations;
-   }
-
-    public function addCreatedConversation(Conversation $createdConversation): static
-    {
-        if (!$this->createdConversations->contains($createdConversation)) {
-            $this->createdConversations->add($createdConversation);
-            $createdConversation->setCreator($this);
-        }
-
-        return $this;
-    }
-
     /**
     * @return Collection<int, Group>
     */
@@ -516,18 +498,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
        return $this;
    }
-
-   public function removeCreatedConversation(Conversation $createdConversation): static
-    {
-        if ($this->createdConversations->removeElement($createdConversation)) {
-            // set the owning side to null (unless already changed)
-            if ($createdConversation->getCreator() === $this) {
-                $createdConversation->setCreator(null);
-            }
-        }
-
-        return $this;
-    }
 
    public function removeMemberGroupPrivate(Group $memberGroupPrivate): static
    {

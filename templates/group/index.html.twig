@@ -6,10 +6,12 @@
     <h1 class="mt-5" style="color: #66563C  ;">Liste des groupes privés</h1>
     <section class="container my-4" style="background-color: #AEEBE7; padding: 20px; border-radius: 8px;">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <a class="btn" href="{{ path('app_group_new') }}" style="background-color: #66563C ; color: white;">Créer un nouveau groupe</a>
+            <a class="btn" href="{{ path('app_group_new') }}" style="background-color: #66563C ; color: white;">Créer un
+                nouveau groupe</a>
         </div>
         <div class="mb-3">
-            <select name="site" id="site" class="form-select" onchange="location = this.value;" style="border-color: #AEEBE7;">
+            <select name="site" id="site" class="form-select" onchange="location = this.value;"
+                    style="border-color: #AEEBE7;">
                 <option value="">-- Choisir un Site --</option>
                 {% for site in sites %}
                     <option value="{{ path('app_group_filter', {'site' :  site.id }) }}">{{ site.name }}</option>
@@ -19,57 +21,65 @@
         <div class="row">
             <div class="col-12">
                 <div class="d-flex">
-                    <a href="{{ path('app_group_filter') }}" class="list-group-item list-group-item-action mb-2" style="background-color: white; color: #66563C; font-size: 1.25rem; padding: 15px;">Tous les groupes</a>
-                    <a href="{{ path('app_group_filter', {'owner': 'organisateur'}) }}" class="list-group-item list-group-item-action mb-2" style="background-color: white; color: #66563C; font-size: 1.25rem; padding: 15px;">Groupes dont je suis l'organisateur/trice</a>
-                    <a href="{{ path('app_group_filter', {'teammate': 'inscrit'}) }}" class="list-group-item list-group-item-action mb-2" style="background-color: white; color: #66563C; font-size: 1.25rem; padding: 15px;">Groupes auxquels je suis inscrit/e</a>
+                    <a href="{{ path('app_group_filter') }}" class="list-group-item list-group-item-action mb-2"
+                       style="background-color: white; color: #66563C; font-size: 1.25rem; padding: 15px;">Tous les
+                        groupes</a>
+                    <a href="{{ path('app_group_filter', {'owner': 'organisateur'}) }}"
+                       class="list-group-item list-group-item-action mb-2"
+                       style="background-color: white; color: #66563C; font-size: 1.25rem; padding: 15px;">Groupes dont
+                        je suis l'organisateur/trice</a>
+                    <a href="{{ path('app_group_filter', {'teammate': 'inscrit'}) }}"
+                       class="list-group-item list-group-item-action mb-2"
+                       style="background-color: white; color: #66563C; font-size: 1.25rem; padding: 15px;">Groupes
+                        auxquels je suis inscrit/e</a>
                 </div>
             </div>
         </div>
-            <table class="table table-striped" style="background-color: #D7C697; border-radius: 8px;">
-                <thead style="background-color: #66563C; color: white;">
-                    <tr>
-                        <th style="background-color: #E0FFFF; color: #66563C ">Name</th>
-                        <th style="background-color: #E0FFFF; color: #66563C ">Description</th>
-                        <th style="background-color: #E0FFFF; color: #66563C ">Owner</th>
-                        <th style="background-color: #E0FFFF; color: #66563C ">Nombres de Membres</th>
-                        <th style="background-color: #E0FFFF; color: #66563C ">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for group in groups %}
-                    <tr>
-                        <td>{{ group.name }}</td>
-                        <td>{{ group.description }}</td>
-                        <td>{{ group.owner.firstName }} {{ group.owner.lastName }}</td>
-                        <td>{{ group.teammate|length }}</td>
-                        <td>
-                            <div class="d-flex gap-2">
-                                <a class="btn btn-primary" href="{{ path('app_group_show', {'id': group.id}) }}">Show</a>
-                                {% if app.user and not group.teammate.contains(app.user) and group.owner is not same as app.user %}
+        <table class="table table-striped" style="background-color: #D7C697; border-radius: 8px;">
+            <thead style="background-color: #66563C; color: white;">
+            <tr>
+                <th style="background-color: #E0FFFF; color: #66563C ">Name</th>
+                <th style="background-color: #E0FFFF; color: #66563C ">Description</th>
+                <th style="background-color: #E0FFFF; color: #66563C ">Owner</th>
+                <th style="background-color: #E0FFFF; color: #66563C ">Nombres de Membres</th>
+                <th style="background-color: #E0FFFF; color: #66563C ">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for group in groups %}
+                <tr>
+                    <td>{{ group.name }}</td>
+                    <td>{{ group.description }}</td>
+                    <td>{{ group.owner.firstName }} {{ group.owner.lastName }}</td>
+                    <td>{{ group.teammate|length }}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-primary" href="{{ path('app_group_show', {'id': group.id}) }}">Voir</a>
+                            {% if app.user and not group.teammate.contains(app.user) and group.owner is not same as app.user %}
                                 <form method="post" action="{{ path('app_group_join', {'id': group.id}) }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token('join' ~ group.id) }}">
-                                    <button class="btn btn-success">Join</button>
+                                    <button class="btn btn-success">Rejoindre</button>
                                 </form>
-                                {% endif %}
-                                {% if app.user and group.teammate.contains(app.user) %}
+                            {% endif %}
+                            {% if app.user and group.teammate.contains(app.user) %}
                                 <form method="post" action="{{ path('app_group_leave', {'id': group.id}) }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token('leave' ~ group.id) }}">
-                                    <button class="btn btn-danger">Leave</button>
+                                    <button class="btn btn-danger">Quitter</button>
                                 </form>
-                                {% endif %}
-                                {% if (app.user is same as group.owner) or is_granted('ROLE_ADMIN') %}
-                                <a href="{{ path('app_group_edit', {'id': group.id}) }}" class="btn btn-warning">Edit</a>
-                                {% endif %}
-                            </div>
-                        </td>
-                    </tr>
-                {% else %}
-                    <tr>
-                        <td colspan="6">no records found</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+                            {% endif %}
+                            {% if (app.user is same as group.owner) or is_granted('ROLE_ADMIN') %}
+                                <a href="{{ path('app_group_edit', {'id': group.id}) }}" class="btn btn-warning">Modifier</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6">no records found</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
 
     </section>
 

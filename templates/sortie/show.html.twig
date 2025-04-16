@@ -4,7 +4,7 @@
 {% block title %}Sortie{% endblock %}
 
 {% block body %}
-   <h1 class="text-center mb-4" style="color: #66563C">{{ sortie.nom }}</h1>
+    <h1 class="text-center mb-4" style="color: #66563C">{{ sortie.nom }}</h1>
 
     <table class="table table-bordered" style="background-color: #E0FFFF; color: #66563C; border-radius: 8px;">
         <tbody>
@@ -58,7 +58,7 @@
         </tbody>
     </table>
 
-    <a class="btn btn-primary" href="{{ path('app_sortie_index') }}">Back to list</a>
+    <a class="btn btn-primary" href="{{ path('app_sortie_index') }}">Retour à la liste</a>
     {% if app.user and sortie.status.name is same as 'Ouverte' and not  sortie.members.contains(app.user) %}
         <form method="post" action="{{ path('app_sortie_sub', {'id': sortie.id}) }}" style="display: inline;">
             <input type="hidden" name="_token" value="{{ csrf_token('inscription' ~ sortie.id) }}">
@@ -71,15 +71,15 @@
             <button type="submit" class="btn btn-warning">Se désister</button>
         </form>
     {% endif %}
-    {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user  %}
-        <a class="btn btn-warning" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">Edit</a>
-        <a href="#" id="btn-delete" class="btn btn-danger">Delete</a>
+    {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user %}
+        <a class="btn btn-warning" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">Modifier</a>
+        <a href="#" id="btn-delete" class="btn btn-danger">Supprimer</a>
         <div style="display: none;" id="delete-form">
             {{ include('sortie/_delete_form.html.twig') }}
         </div>
 
         <script>
-            document.getElementById('btn-delete').addEventListener('click', function(event) {
+            document.getElementById('btn-delete').addEventListener('click', function (event) {
                 event.preventDefault(); // Prevent the default action
                 let deleteForm = document.getElementById('delete-form');
                 if (deleteForm.style.display === 'none') {
@@ -125,10 +125,14 @@
                         {% endfor %}
                     </div>
                     {% if app.user and (sortie.members.contains(app.user) or sortie.planner is same as app.user) %}
-                        <form action="{{ path('comment_react', {id: comment.id}) }}" method="post" class="mt-2 d-flex gap-2">
-                            <button type="submit" name="emoji" value="👍" class="btn btn-sm btn-outline-primary">👍</button>
-                            <button type="submit" name="emoji" value="❤️" class="btn btn-sm btn-outline-danger">❤️</button>
-                            <button type="submit" name="emoji" value="😂" class="btn btn-sm btn-outline-warning">😂</button>
+                        <form action="{{ path('comment_react', {id: comment.id}) }}" method="post"
+                              class="mt-2 d-flex gap-2">
+                            <button type="submit" name="emoji" value="👍" class="btn btn-sm btn-outline-primary">👍
+                            </button>
+                            <button type="submit" name="emoji" value="❤️" class="btn btn-sm btn-outline-danger">❤️
+                            </button>
+                            <button type="submit" name="emoji" value="😂" class="btn btn-sm btn-outline-warning">😂
+                            </button>
                         </form>
                     {% endif %}
                 </li>
@@ -143,10 +147,10 @@
         <h4 class="mb-3" style="color: #66563C">Ajouter un commentaire</h4>
         <div class="card p-3 shadow-sm mb-4">
             {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
-                <div class="mb-3">
-                    {{ form_widget(form.content, {'attr': {'class': 'form-control', 'placeholder': 'Écrivez votre commentaire ici...'}}) }}
-                </div>
-                <button type="submit" class="btn btn-success">Envoyer</button>
+            <div class="mb-3">
+                {{ form_widget(form.content, {'attr': {'class': 'form-control', 'placeholder': 'Écrivez votre commentaire ici...'}}) }}
+            </div>
+            <button type="submit" class="btn btn-success">Envoyer</button>
             {{ form_end(form) }}
         </div>
     {% endif %}

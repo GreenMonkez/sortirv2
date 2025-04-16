@@ -17,7 +17,11 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class ConversationController extends AbstractController
 {
 
-    // Show a specific conversation and its messages with the possibility to send a new message
+    /**
+     * Display a list of conversations
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
     #[IsGranted('ROLE_USER')]
     #[Route('/{id}', name: 'app_conversation_show', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function show(
@@ -26,19 +30,17 @@ final class ConversationController extends AbstractController
         EntityManagerInterface $entityManager
     ): Response
     {
-        // Check if the user is a participant in the conversation
+
         if (!$conversation->getParticipants()->contains($this->getUser())) {
             throw $this->createAccessDeniedException('Vous n\'êtes pas autorisé à accéder à cette conversation.');
         }
 
-        // Create a new message
         $message = new Message();
 
-        // Create the form for sending a message
         $form = $this->createForm(MessageType::class, $message);
         $form->handleRequest($request);
 
-        // Handle form submission
+
         if ($form->isSubmitted() && $form->isValid()) {
             $message->setConversation($conversation);
             $message->setSender($this->getUser());
@@ -46,12 +48,9 @@ final class ConversationController extends AbstractController
             $entityManager->persist($message);
             $entityManager->flush();
 
-            // Redirect to the same conversation page after sending the message
             return $this->redirectToRoute('app_conversation_show', ['id' => $conversation->getId()]);
         }
 
-
-        // Regrouper les réactions par emoji
         $messagesWithReactions = [];
         foreach ($conversation->getMessages() as $message) {
             $reactionsGrouped = [];
@@ -75,7 +74,12 @@ final class ConversationController extends AbstractController
         ]);
     }
 
-    // Create a new conversation
+    /**
+     * Create a new conversation
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
     #[IsGranted('ROLE_USER')]
     #[Route('/new', name: 'app_conversation_new', methods: ['GET', 'POST'])]
     public function new(
@@ -83,10 +87,7 @@ final class ConversationController extends AbstractController
         EntityManagerInterface $entityManager,
     ): Response
     {
-        // Create a new conversation
         $conversation = new Conversation();
-
-        // Create the form for creating a new conversation
         $form = $this->createForm(ConversationType::class, $conversation);
         $form->handleRequest($request);
 
@@ -95,7 +96,6 @@ final class ConversationController extends AbstractController
             $entityManager->persist($conversation);
             $entityManager->flush();
 
-            // Redirect to the newly created conversation
             return $this->redirectToRoute('app_conversation_show', ['id' => $conversation->getId()]);
         }
 
@@ -105,13 +105,19 @@ final class ConversationController extends AbstractController
         ]);
     }
 
+    /**
+     * React to a message with an emoji
+     * @param Message $message
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @return Response
+     */
    #[Route('/message/{id}/react', name: 'message_react', methods: ['POST'])]
     public function react(Message $message, Request $request, EntityManagerInterface $entityManager): Response
     {
         $emoji = $request->request->get('emoji');
         $user = $this->getUser();
 
-        // Vérifie si l'emoji est valide
         $validEmojis = ['👍', '❤️', '😂'];
         if ($emoji && in_array($emoji, $validEmojis, true)) {
             // Vérifie si l'utilisateur a déjà réagi avec cet emoji
@@ -120,10 +126,8 @@ final class ConversationController extends AbstractController
             });
 
             if ($existingReaction) {
-                // Si une réaction existe, on l'annule
                 $message->removeReaction($emoji, $user);
             } else {
-                // Sinon, on ajoute la réaction
                 $message->addReaction($emoji, $user);
             }
 
