@@ -109,18 +109,18 @@ final class SortieController extends AbstractController
         $form = $this->createForm(SortieType::class, $sortie);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted()) {
+
+      if ($form->isSubmitted() && $request->get('sortie')['lieu']['departement'] && $request->get('sortie')['lieu']['city']) {
 
             // Récupérer les données des champs non mappés
             $region = $sortie->getLieu()->getRegion();
             $departement = $request->get('sortie')['lieu']['departement'];
             $ville = $request->get('sortie')['lieu']['city'];
 
-
-            // Ajouter les données récupérées au modèle
-            $sortie->getLieu()?->setRegion($region);
-            $sortie->getLieu()?->setDepartement($departement);
-            $sortie->getLieu()?->setCity($ville);
+          // Ajouter les données récupérées au modèle
+          $sortie->getLieu()?->setRegion($region);
+          $sortie->getLieu()?->setDepartement($departement);
+          $sortie->getLieu()?->setCity($ville);
 
 
             // Conserver les données existantes
@@ -201,6 +201,7 @@ final class SortieController extends AbstractController
         $emoji = $request->request->get('emoji');
         $user = $this->getUser();
 
+        // Vérifie si l'emoji est valide
         $validEmojis = ['👍', '❤️', '😂'];
         if ($emoji && in_array($emoji, $validEmojis, true)) {
 
@@ -211,11 +212,14 @@ final class SortieController extends AbstractController
             });
 
             if ($existingReaction) {
+                // Si une réaction existe, on l'annule
                 $comment->removeReaction($emoji, $user);
             } else {
+                // Sinon, on ajoute la réaction
                 $comment->addReaction($emoji, $user);
             }
 
+            // Enregistre les modifications dans la base de données
             $entityManager->persist($comment);
             $entityManager->flush();
         }
@@ -233,7 +237,7 @@ final class SortieController extends AbstractController
     {
         $user = $this->getUser();
 
-
+        // Vérifiez si l'utilisateur est connecté
         if (!$user) {
             $this->addFlash('error', 'Vous devez être connecté pour vous inscrire.');
             return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
@@ -277,7 +281,8 @@ final class SortieController extends AbstractController
             $mailer->send($email);
 
             $this->addFlash('success', 'Inscription réussie ! Un email de confirmation vous a été envoyé.');
-        } else {
+        }
+        else {
             $this->addFlash('error', 'Token CSRF invalide.');
         }
 
@@ -354,13 +359,13 @@ final class SortieController extends AbstractController
         MotifAnnulationRepository $motifAnnulationRepository
     ): Response
     {
+        // Vérifiez si l'utilisateur est le planificateur de la sortie
         $form = $this->createForm(SortieType::class, $sortie, [
             'lieu' => [
                 'region' => $request->get('sortie')['lieu']['region'] ?? [],
                 'departement' => $request->get('sortie')['lieu']['departement'] ?? [],
             ]
         ]);
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -414,7 +419,7 @@ final class SortieController extends AbstractController
             $cancel = $motifAnnulationRepository->find($request->get('motif'));
             if ($cancel === null) {
                 $this->addFlash('danger', 'Erreur lors de l\'annulation de la sortie !');
-                return $this->redirectToRoute('sortie/edit.html.twig', [], Response::HTTP_SEE_OTHER);
+                return $this->redirectToRoute('app_sortie_edit', [], Response::HTTP_SEE_OTHER);
             }
             $cancel->setCommentaire($request->get('commentaire'));
             $sortie->setMotifsCancel($cancel);
@@ -425,7 +430,7 @@ final class SortieController extends AbstractController
             return $this->redirectToRoute('app_sortie_index', [], Response::HTTP_SEE_OTHER);
         }
         $this->addFlash('danger', 'Erreur lors de l\'annulation de la sortie !');
-        return $this->redirectToRoute('sortie/edit.html.twig', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_sortie_edit', [], Response::HTTP_SEE_OTHER);
     }
 
 

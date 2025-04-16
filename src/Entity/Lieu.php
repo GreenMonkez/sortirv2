@@ -52,33 +52,22 @@ class Lieu
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(message: 'La ville est obligatoire')]
-    #[Assert\Length(
-        min: 2,
-        max: 255,
-        minMessage: 'La ville doit contenir au moins {{ limit }} caractères',
-        maxMessage: 'La ville ne peut pas dépasser {{ limit }} caractères'
-    )]
     private ?string $city = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255,nullable: false)]
     #[Assert\NotBlank(message: 'Le code postal est obligatoire')]
     #[Assert\Regex(
         pattern: '/^\d{5}$/',
         message: 'Le code postal doit contenir 5 chiffres'
     )]
-    #[Assert\Length(
-        min: 5,
-        max: 5,
-        minMessage: 'Le code postal doit contenir exactement {{ limit }} chiffres',
-        maxMessage: 'Le code postal doit contenir exactement {{ limit }} chiffres'
-    )]
-
     private ?string $postaleCode = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La région est obligatoire')]
     private ?string $region = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Le département est obligatoire')]
     private ?string $departement = null;
 
     public function __construct()
