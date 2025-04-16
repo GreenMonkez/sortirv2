@@ -3,9 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Comment;
+use App\Entity\Rating;
 use App\Entity\Sortie;
 use App\EntityListener\SortieArchiver;
 use App\Form\CommentType;
+use App\Form\RatingType;
 use App\Form\SortieType;
 use App\Repository\EtatRepository;
 use App\Repository\MotifAnnulationRepository;
@@ -161,6 +163,7 @@ final class SortieController extends AbstractController
         if (!$sortie) {
             throw $this->createNotFoundException('Sortie not found');
         }
+        $averageRating = $sortie->calculateAverageRating();
 
         $comment = new Comment();
         $form = $this->createForm(CommentType::class, $comment);
@@ -181,6 +184,7 @@ final class SortieController extends AbstractController
             'site' => $siteRepository->findAll(),
             'form' => $form,
             'motifs' => $motifAnnulationRepository->findAll(),
+            'averageRating' => $averageRating,
         ]);
     }
 
@@ -225,6 +229,43 @@ final class SortieController extends AbstractController
         }
 
         return $this->redirectToRoute('app_sortie_show', ['id' => $comment->getSortie()->getId()]);
+    }
+
+    #[Route('/sortie/{id}/rate', name: 'sortie_rate', methods: ['POST', 'GET'])]
+    public function rateSortie(
+        Sortie                 $sortie,
+        Request                $request,
+        EntityManagerInterface $em
+    ): Response
+    {
+        $user = $this->getUser();
+
+        $existingRating = $em->getRepository(Rating::class)->findOneBy(['user' => $user, 'sortie' => $sortie]);
+
+        if ($existingRating) {
+            $this->addFlash('danger', 'Vous avez déjà noté cette sortie.');
+            return $this->redirectToRoute('app_sortie_show', ['id' => $sortie->getId()]);
+        }
+
+        $rating = new Rating();
+        $rating->setUser($user);
+        $rating->setSortie($sortie);
+
+        $form = $this->createForm(RatingType::class, $rating);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $em->persist($rating);
+            $em->flush();
+
+            $this->addFlash('success', 'Votre note a été enregistrée.');
+            return $this->redirectToRoute('app_sortie_show', ['id' => $sortie->getId()]);
+        }
+
+        return $this->render('sortie/rate.html.twig', [
+            'sortie' => $sortie,
+            'form' => $form,
+        ]);
     }
 
     #[Route('/{id}/inscription', name: 'app_sortie_sub')]

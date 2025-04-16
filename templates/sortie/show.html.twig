@@ -1,6 +1,11 @@
 {% extends 'base.html.twig' %}
 {% form_theme form 'bootstrap_5_layout.html.twig' %}
 
+{% block stylesheet %}
+    <link rel="stylesheet" href="{{ asset('styles/app.css') }}">
+
+{% endblock %}
+
 {% block title %}Sortie{% endblock %}
 
 {% block body %}
@@ -59,18 +64,26 @@
     </table>
 
     <a class="btn btn-primary" href="{{ path('app_sortie_index') }}">Retour à la liste</a>
+
+
+    {% if app.user and sortie.status.name is same as 'Ouverte' and sortie.members.contains(app.user) %}
+        <a class="btn btn-success" href="{{ path('app_sortie_sub', {'id': sortie.id}) }}">Déjà inscrit</a>
+    {% endif %}
+
     {% if app.user and sortie.status.name is same as 'Ouverte' and not  sortie.members.contains(app.user) %}
         <form method="post" action="{{ path('app_sortie_sub', {'id': sortie.id}) }}" style="display: inline;">
             <input type="hidden" name="_token" value="{{ csrf_token('inscription' ~ sortie.id) }}">
             <button type="submit" class="btn btn-success">S'inscrire</button>
         </form>
     {% endif %}
+
     {% if app.user and  sortie.members.contains(app.user) and (sortie.status.name is same as ('Ouverte') or sortie.status.name is same as ('Cloturée')) %}
         <form method="post" action="{{ path('app_sortie_unSub', {'id': sortie.id}) }}" style="display: inline;">
             <input type="hidden" name="_token" value="{{ csrf_token('desinscription' ~ sortie.id) }}">
             <button type="submit" class="btn btn-warning">Se désister</button>
         </form>
     {% endif %}
+
     {% if is_granted('ROLE_ADMIN') or sortie.planner is same as app.user %}
         <a class="btn btn-warning" href="{{ path('app_sortie_edit', {'id': sortie.id}) }}">Modifier</a>
         <a href="#" id="btn-delete" class="btn btn-danger">Supprimer</a>
@@ -89,6 +102,28 @@
                 }
             });
         </script>
+    {% endif %}
+
+    <h2 class="mt-4 mb-3" style="color: #66563C">Note des utilisateurs : </h2>
+    {% if sortie.ratings is not empty %}
+        <div class="rating mb-3">
+            {% for i in 1..5 %}
+                {% if i <= averageRating %}
+                    <span class="star">★</span>
+                {% else %}
+                    <span class="star">☆</span>
+                {% endif %}
+            {% endfor %}
+            <strong>({{ averageRating }})</strong>
+        </div>
+    {% else %}
+        <p>Aucune note</p>
+    {% endif %}
+
+
+
+    {% if sortie.members.contains(app.user) and sortie.status.name is same as 'Terminée' %}
+        <a href="{{ path('sortie_rate', { id: sortie.id }) }}" class="btn btn-info">Noter cette sortie</a>
     {% endif %}
 
     <h2 class="mt-4 mb-3" style="color: #66563C">Commentaires</h2>
