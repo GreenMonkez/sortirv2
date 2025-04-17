@@ -502,10 +502,13 @@ final class UserController extends AbstractController
         // Close the file
         fclose($csvContent);
 
+        // Set the filename for the download
+        $filename = sprintf('utilisateurs_%s.csv', (new \DateTime())->format('Y-m-d_H-i-s'));
+
         // Create a response with the CSV content
         return new Response($csvOutput, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="utilisateurs.csv"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
